@@ -26,6 +26,9 @@ namespace FindEggApplication {
 		{
 			InitializeComponent();
 			heightMap = gcnew HeightMap();
+			isRun = false;
+			textBoxEntryThreshold->Text = heightMap->entryThreshold.ToString();
+			textBoxLower->Text = heightMap->loweringThreshold.ToString();
 
 			//
 			//TODO: добавьте код конструктора
@@ -50,10 +53,12 @@ namespace FindEggApplication {
 	private:
 		HeightMap^ heightMap;
 		Thread^ myThread;
+		float eggSizeData = 0.037;
+		bool isRun;
 	private: System::Windows::Forms::SplitContainer^ splitContainer1;
 
 	private: System::Windows::Forms::SplitContainer^ splitContainer2;
-	private: System::Windows::Forms::Button^ buttonCalculate;
+
 	private: System::Windows::Forms::Button^ buttonOpenFile;
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel1;
 
@@ -88,9 +93,11 @@ namespace FindEggApplication {
 
 	private: System::Windows::Forms::Label^ label1;
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel3;
-	private: System::Windows::Forms::Panel^ panel8;
-	private: System::Windows::Forms::TextBox^ textBox1;
-	private: System::Windows::Forms::Label^ label4;
+
+
+
+
+
 
 
 
@@ -101,15 +108,39 @@ namespace FindEggApplication {
 	private: System::Windows::Forms::Panel^ panel9;
 	private: System::Windows::Forms::TextBox^ textBoxNoise;
 	private: System::Windows::Forms::Label^ label5;
-	private: System::Windows::Forms::Panel^ panel2;
-	private: System::Windows::Forms::TextBox^ textBox2;
-	private: System::Windows::Forms::Label^ label2;
+
+
+
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel4;
 	private: System::Windows::Forms::Label^ label9;
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel5;
 	private: System::Windows::Forms::Label^ label10;
 	private: System::ComponentModel::BackgroundWorker^ backgroundWorker1;
 	private: System::Windows::Forms::Button^ button1;
+	private: System::Windows::Forms::Button^ buttonStop;
+	private: System::Windows::Forms::Panel^ panel10;
+	private: System::Windows::Forms::TextBox^ textBoxEntryThreshold;
+
+	private: System::Windows::Forms::Label^ label12;
+	private: System::Windows::Forms::Panel^ panel2;
+	private: System::Windows::Forms::TextBox^ textBoxLower;
+	private: System::Windows::Forms::Label^ label2;
+	private: System::Windows::Forms::Button^ save;
+	private: System::Windows::Forms::Button^ button2;
+	private: System::Windows::Forms::Panel^ panel8;
+	private: System::Windows::Forms::TextBox^ eggSize;
+
+	private: System::Windows::Forms::Label^ label4;
+	private: System::Windows::Forms::Panel^ panel11;
+	private: System::Windows::Forms::TextBox^ textBoxPercent;
+	private: System::Windows::Forms::Label^ label13;
+	private: System::Windows::Forms::Panel^ panel12;
+	private: System::Windows::Forms::TextBox^ textBoxPercLow;
+
+	private: System::Windows::Forms::Label^ label14;
+	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel6;
+	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel7;
+
 
 
 
@@ -172,14 +203,27 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel5 = (gcnew System::Windows::Forms::FlowLayoutPanel());
 			   this->label10 = (gcnew System::Windows::Forms::Label());
 			   this->flowLayoutPanel3 = (gcnew System::Windows::Forms::FlowLayoutPanel());
-			   this->panel8 = (gcnew System::Windows::Forms::Panel());
-			   this->textBox1 = (gcnew System::Windows::Forms::TextBox());
-			   this->label4 = (gcnew System::Windows::Forms::Label());
+			   this->panel10 = (gcnew System::Windows::Forms::Panel());
+			   this->textBoxEntryThreshold = (gcnew System::Windows::Forms::TextBox());
+			   this->label12 = (gcnew System::Windows::Forms::Label());
 			   this->panel2 = (gcnew System::Windows::Forms::Panel());
-			   this->textBox2 = (gcnew System::Windows::Forms::TextBox());
+			   this->textBoxLower = (gcnew System::Windows::Forms::TextBox());
 			   this->label2 = (gcnew System::Windows::Forms::Label());
+			   this->flowLayoutPanel6 = (gcnew System::Windows::Forms::FlowLayoutPanel());
+			   this->panel8 = (gcnew System::Windows::Forms::Panel());
+			   this->eggSize = (gcnew System::Windows::Forms::TextBox());
+			   this->label4 = (gcnew System::Windows::Forms::Label());
+			   this->flowLayoutPanel7 = (gcnew System::Windows::Forms::FlowLayoutPanel());
+			   this->panel11 = (gcnew System::Windows::Forms::Panel());
+			   this->textBoxPercent = (gcnew System::Windows::Forms::TextBox());
+			   this->label13 = (gcnew System::Windows::Forms::Label());
+			   this->panel12 = (gcnew System::Windows::Forms::Panel());
+			   this->textBoxPercLow = (gcnew System::Windows::Forms::TextBox());
+			   this->label14 = (gcnew System::Windows::Forms::Label());
+			   this->button2 = (gcnew System::Windows::Forms::Button());
+			   this->save = (gcnew System::Windows::Forms::Button());
+			   this->buttonStop = (gcnew System::Windows::Forms::Button());
 			   this->button1 = (gcnew System::Windows::Forms::Button());
-			   this->buttonCalculate = (gcnew System::Windows::Forms::Button());
 			   this->buttonOpenFile = (gcnew System::Windows::Forms::Button());
 			   this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
 			   (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer1))->BeginInit();
@@ -203,8 +247,13 @@ namespace FindEggApplication {
 			   this->panel9->SuspendLayout();
 			   this->flowLayoutPanel5->SuspendLayout();
 			   this->flowLayoutPanel3->SuspendLayout();
-			   this->panel8->SuspendLayout();
+			   this->panel10->SuspendLayout();
 			   this->panel2->SuspendLayout();
+			   this->flowLayoutPanel6->SuspendLayout();
+			   this->panel8->SuspendLayout();
+			   this->flowLayoutPanel7->SuspendLayout();
+			   this->panel11->SuspendLayout();
+			   this->panel12->SuspendLayout();
 			   this->SuspendLayout();
 			   // 
 			   // splitContainer1
@@ -229,9 +278,9 @@ namespace FindEggApplication {
 			   // 
 			   // pictureBox1
 			   // 
-			   this->pictureBox1->Location = System::Drawing::Point(3, 9);
+			   this->pictureBox1->Location = System::Drawing::Point(50, 9);
 			   this->pictureBox1->Name = L"pictureBox1";
-			   this->pictureBox1->Size = System::Drawing::Size(243, 700);
+			   this->pictureBox1->Size = System::Drawing::Size(150, 700);
 			   this->pictureBox1->TabIndex = 0;
 			   this->pictureBox1->TabStop = false;
 			   // 
@@ -248,9 +297,12 @@ namespace FindEggApplication {
 			   // 
 			   // splitContainer2.Panel2
 			   // 
+			   this->splitContainer2->Panel2->Controls->Add(this->button2);
+			   this->splitContainer2->Panel2->Controls->Add(this->save);
+			   this->splitContainer2->Panel2->Controls->Add(this->buttonStop);
 			   this->splitContainer2->Panel2->Controls->Add(this->button1);
-			   this->splitContainer2->Panel2->Controls->Add(this->buttonCalculate);
 			   this->splitContainer2->Panel2->Controls->Add(this->buttonOpenFile);
+			   this->splitContainer2->Panel2->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &MyForm::splitContainer2_Panel2_Paint);
 			   this->splitContainer2->Size = System::Drawing::Size(252, 721);
 			   this->splitContainer2->SplitterDistance = 525;
 			   this->splitContainer2->TabIndex = 0;
@@ -261,8 +313,10 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel2);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel5);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel3);
+			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel6);
+			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel7);
 			   this->flowLayoutPanel1->FlowDirection = System::Windows::Forms::FlowDirection::TopDown;
-			   this->flowLayoutPanel1->Location = System::Drawing::Point(0, 0);
+			   this->flowLayoutPanel1->Location = System::Drawing::Point(-3, -2);
 			   this->flowLayoutPanel1->Name = L"flowLayoutPanel1";
 			   this->flowLayoutPanel1->Size = System::Drawing::Size(251, 525);
 			   this->flowLayoutPanel1->TabIndex = 0;
@@ -507,86 +561,212 @@ namespace FindEggApplication {
 			   // 
 			   // flowLayoutPanel3
 			   // 
-			   this->flowLayoutPanel3->Controls->Add(this->panel8);
+			   this->flowLayoutPanel3->Controls->Add(this->panel10);
 			   this->flowLayoutPanel3->Controls->Add(this->panel2);
 			   this->flowLayoutPanel3->Location = System::Drawing::Point(3, 215);
 			   this->flowLayoutPanel3->Name = L"flowLayoutPanel3";
-			   this->flowLayoutPanel3->Size = System::Drawing::Size(245, 100);
+			   this->flowLayoutPanel3->Size = System::Drawing::Size(245, 32);
 			   this->flowLayoutPanel3->TabIndex = 12;
 			   // 
-			   // panel8
+			   // panel10
 			   // 
-			   this->panel8->Controls->Add(this->textBox1);
-			   this->panel8->Controls->Add(this->label4);
-			   this->panel8->Location = System::Drawing::Point(3, 3);
-			   this->panel8->Name = L"panel8";
-			   this->panel8->Size = System::Drawing::Size(98, 20);
-			   this->panel8->TabIndex = 5;
+			   this->panel10->Controls->Add(this->textBoxEntryThreshold);
+			   this->panel10->Controls->Add(this->label12);
+			   this->panel10->Location = System::Drawing::Point(3, 3);
+			   this->panel10->Name = L"panel10";
+			   this->panel10->Size = System::Drawing::Size(115, 20);
+			   this->panel10->TabIndex = 6;
 			   // 
-			   // textBox1
+			   // textBoxEntryThreshold
 			   // 
-			   this->textBox1->Location = System::Drawing::Point(41, 0);
-			   this->textBox1->Name = L"textBox1";
-			   this->textBox1->Size = System::Drawing::Size(57, 20);
-			   this->textBox1->TabIndex = 3;
+			   this->textBoxEntryThreshold->Location = System::Drawing::Point(55, 0);
+			   this->textBoxEntryThreshold->Name = L"textBoxEntryThreshold";
+			   this->textBoxEntryThreshold->Size = System::Drawing::Size(57, 20);
+			   this->textBoxEntryThreshold->TabIndex = 3;
+			   this->textBoxEntryThreshold->TextChanged += gcnew System::EventHandler(this, &MyForm::textBoxEntryThreshold_TextChanged);
 			   // 
-			   // label4
+			   // label12
 			   // 
-			   this->label4->AutoSize = true;
-			   this->label4->Location = System::Drawing::Point(3, 3);
-			   this->label4->Name = L"label4";
-			   this->label4->Size = System::Drawing::Size(21, 13);
-			   this->label4->TabIndex = 2;
-			   this->label4->Text = L"col";
+			   this->label12->AutoSize = true;
+			   this->label12->Location = System::Drawing::Point(3, 3);
+			   this->label12->Name = L"label12";
+			   this->label12->Size = System::Drawing::Size(30, 13);
+			   this->label12->TabIndex = 2;
+			   this->label12->Text = L"entry";
 			   // 
 			   // panel2
 			   // 
-			   this->panel2->Controls->Add(this->textBox2);
+			   this->panel2->Controls->Add(this->textBoxLower);
 			   this->panel2->Controls->Add(this->label2);
-			   this->panel2->Location = System::Drawing::Point(107, 3);
+			   this->panel2->Location = System::Drawing::Point(124, 3);
 			   this->panel2->Name = L"panel2";
-			   this->panel2->Size = System::Drawing::Size(98, 20);
-			   this->panel2->TabIndex = 6;
+			   this->panel2->Size = System::Drawing::Size(115, 20);
+			   this->panel2->TabIndex = 7;
 			   // 
-			   // textBox2
+			   // textBoxLower
 			   // 
-			   this->textBox2->Location = System::Drawing::Point(41, 0);
-			   this->textBox2->Name = L"textBox2";
-			   this->textBox2->Size = System::Drawing::Size(57, 20);
-			   this->textBox2->TabIndex = 3;
+			   this->textBoxLower->Location = System::Drawing::Point(55, 0);
+			   this->textBoxLower->Name = L"textBoxLower";
+			   this->textBoxLower->Size = System::Drawing::Size(57, 20);
+			   this->textBoxLower->TabIndex = 3;
+			   this->textBoxLower->TextChanged += gcnew System::EventHandler(this, &MyForm::textBoxLower_TextChanged);
 			   // 
 			   // label2
 			   // 
 			   this->label2->AutoSize = true;
 			   this->label2->Location = System::Drawing::Point(3, 3);
 			   this->label2->Name = L"label2";
-			   this->label2->Size = System::Drawing::Size(21, 13);
+			   this->label2->Size = System::Drawing::Size(32, 13);
 			   this->label2->TabIndex = 2;
-			   this->label2->Text = L"col";
+			   this->label2->Text = L"lower";
+			   // 
+			   // flowLayoutPanel6
+			   // 
+			   this->flowLayoutPanel6->Controls->Add(this->panel8);
+			   this->flowLayoutPanel6->Location = System::Drawing::Point(3, 253);
+			   this->flowLayoutPanel6->Name = L"flowLayoutPanel6";
+			   this->flowLayoutPanel6->Size = System::Drawing::Size(245, 30);
+			   this->flowLayoutPanel6->TabIndex = 13;
+			   // 
+			   // panel8
+			   // 
+			   this->panel8->Controls->Add(this->eggSize);
+			   this->panel8->Controls->Add(this->label4);
+			   this->panel8->Location = System::Drawing::Point(3, 3);
+			   this->panel8->Name = L"panel8";
+			   this->panel8->Size = System::Drawing::Size(115, 20);
+			   this->panel8->TabIndex = 7;
+			   // 
+			   // eggSize
+			   // 
+			   this->eggSize->Location = System::Drawing::Point(55, 0);
+			   this->eggSize->Name = L"eggSize";
+			   this->eggSize->Size = System::Drawing::Size(57, 20);
+			   this->eggSize->TabIndex = 3;
+			   this->eggSize->TextChanged += gcnew System::EventHandler(this, &MyForm::eggSize_TextChanged);
+			   // 
+			   // label4
+			   // 
+			   this->label4->AutoSize = true;
+			   this->label4->Location = System::Drawing::Point(3, 3);
+			   this->label4->Name = L"label4";
+			   this->label4->Size = System::Drawing::Size(25, 13);
+			   this->label4->TabIndex = 2;
+			   this->label4->Text = L"egg";
+			   this->label4->Click += gcnew System::EventHandler(this, &MyForm::label4_Click);
+			   // 
+			   // flowLayoutPanel7
+			   // 
+			   this->flowLayoutPanel7->Controls->Add(this->panel11);
+			   this->flowLayoutPanel7->Controls->Add(this->panel12);
+			   this->flowLayoutPanel7->Location = System::Drawing::Point(3, 289);
+			   this->flowLayoutPanel7->Name = L"flowLayoutPanel7";
+			   this->flowLayoutPanel7->Size = System::Drawing::Size(245, 32);
+			   this->flowLayoutPanel7->TabIndex = 14;
+			   // 
+			   // panel11
+			   // 
+			   this->panel11->Controls->Add(this->textBoxPercent);
+			   this->panel11->Controls->Add(this->label13);
+			   this->panel11->Location = System::Drawing::Point(3, 3);
+			   this->panel11->Name = L"panel11";
+			   this->panel11->Size = System::Drawing::Size(115, 20);
+			   this->panel11->TabIndex = 8;
+			   // 
+			   // textBoxPercent
+			   // 
+			   this->textBoxPercent->Location = System::Drawing::Point(55, 0);
+			   this->textBoxPercent->Name = L"textBoxPercent";
+			   this->textBoxPercent->Size = System::Drawing::Size(57, 20);
+			   this->textBoxPercent->TabIndex = 3;
+			   this->textBoxPercent->TextChanged += gcnew System::EventHandler(this, &MyForm::textBoxPercent_TextChanged);
+			   // 
+			   // label13
+			   // 
+			   this->label13->AutoSize = true;
+			   this->label13->Location = System::Drawing::Point(3, 3);
+			   this->label13->Name = L"label13";
+			   this->label13->Size = System::Drawing::Size(47, 13);
+			   this->label13->TabIndex = 2;
+			   this->label13->Text = L"percEntr";
+			   // 
+			   // panel12
+			   // 
+			   this->panel12->Controls->Add(this->textBoxPercLow);
+			   this->panel12->Controls->Add(this->label14);
+			   this->panel12->Location = System::Drawing::Point(124, 3);
+			   this->panel12->Name = L"panel12";
+			   this->panel12->Size = System::Drawing::Size(115, 20);
+			   this->panel12->TabIndex = 8;
+			   // 
+			   // textBoxPercLow
+			   // 
+			   this->textBoxPercLow->Location = System::Drawing::Point(55, 0);
+			   this->textBoxPercLow->Name = L"textBoxPercLow";
+			   this->textBoxPercLow->Size = System::Drawing::Size(57, 20);
+			   this->textBoxPercLow->TabIndex = 3;
+			   this->textBoxPercLow->TextChanged += gcnew System::EventHandler(this, &MyForm::textBoxPercLow_TextChanged);
+			   // 
+			   // label14
+			   // 
+			   this->label14->AutoSize = true;
+			   this->label14->Location = System::Drawing::Point(3, 3);
+			   this->label14->Name = L"label14";
+			   this->label14->Size = System::Drawing::Size(48, 13);
+			   this->label14->TabIndex = 2;
+			   this->label14->Text = L"percLow";
+			   // 
+			   // button2
+			   // 
+			   this->button2->Enabled = false;
+			   this->button2->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				   static_cast<System::Byte>(0)));
+			   this->button2->Location = System::Drawing::Point(3, 140);
+			   this->button2->Name = L"button2";
+			   this->button2->Size = System::Drawing::Size(245, 40);
+			   this->button2->TabIndex = 5;
+			   this->button2->Text = L"RESET";
+			   this->button2->UseVisualStyleBackColor = true;
+			   this->button2->Click += gcnew System::EventHandler(this, &MyForm::button2_Click);
+			   // 
+			   // save
+			   // 
+			   this->save->Enabled = false;
+			   this->save->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				   static_cast<System::Byte>(0)));
+			   this->save->Location = System::Drawing::Point(3, 95);
+			   this->save->Name = L"save";
+			   this->save->Size = System::Drawing::Size(245, 40);
+			   this->save->TabIndex = 4;
+			   this->save->Text = L"SAVE";
+			   this->save->UseVisualStyleBackColor = true;
+			   this->save->Click += gcnew System::EventHandler(this, &MyForm::save_Click);
+			   // 
+			   // buttonStop
+			   // 
+			   this->buttonStop->Enabled = false;
+			   this->buttonStop->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+				   static_cast<System::Byte>(204)));
+			   this->buttonStop->Location = System::Drawing::Point(131, 49);
+			   this->buttonStop->Name = L"buttonStop";
+			   this->buttonStop->Size = System::Drawing::Size(117, 40);
+			   this->buttonStop->TabIndex = 3;
+			   this->buttonStop->Text = L"STOP";
+			   this->buttonStop->UseVisualStyleBackColor = true;
+			   this->buttonStop->Click += gcnew System::EventHandler(this, &MyForm::buttonStop_Click);
 			   // 
 			   // button1
 			   // 
+			   this->button1->Enabled = false;
 			   this->button1->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				   static_cast<System::Byte>(204)));
-			   this->button1->Location = System::Drawing::Point(4, 95);
+			   this->button1->Location = System::Drawing::Point(3, 49);
 			   this->button1->Name = L"button1";
-			   this->button1->Size = System::Drawing::Size(245, 40);
+			   this->button1->Size = System::Drawing::Size(117, 40);
 			   this->button1->TabIndex = 2;
-			   this->button1->Text = L"DOWORK";
+			   this->button1->Text = L"PLAY";
 			   this->button1->UseVisualStyleBackColor = true;
 			   this->button1->Click += gcnew System::EventHandler(this, &MyForm::button1_Click);
-			   // 
-			   // buttonCalculate
-			   // 
-			   this->buttonCalculate->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				   static_cast<System::Byte>(204)));
-			   this->buttonCalculate->Location = System::Drawing::Point(3, 49);
-			   this->buttonCalculate->Name = L"buttonCalculate";
-			   this->buttonCalculate->Size = System::Drawing::Size(245, 40);
-			   this->buttonCalculate->TabIndex = 1;
-			   this->buttonCalculate->Text = L"CALCULATE";
-			   this->buttonCalculate->UseVisualStyleBackColor = true;
-			   this->buttonCalculate->Click += gcnew System::EventHandler(this, &MyForm::buttonCalculate_Click);
 			   // 
 			   // buttonOpenFile
 			   // 
@@ -602,6 +782,7 @@ namespace FindEggApplication {
 			   // 
 			   // backgroundWorker1
 			   // 
+			   this->backgroundWorker1->WorkerSupportsCancellation = true;
 			   this->backgroundWorker1->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &MyForm::backgroundWorker1_DoWork);
 			   // 
 			   // MyForm
@@ -644,48 +825,43 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel5->ResumeLayout(false);
 			   this->flowLayoutPanel5->PerformLayout();
 			   this->flowLayoutPanel3->ResumeLayout(false);
-			   this->panel8->ResumeLayout(false);
-			   this->panel8->PerformLayout();
+			   this->panel10->ResumeLayout(false);
+			   this->panel10->PerformLayout();
 			   this->panel2->ResumeLayout(false);
 			   this->panel2->PerformLayout();
+			   this->flowLayoutPanel6->ResumeLayout(false);
+			   this->panel8->ResumeLayout(false);
+			   this->panel8->PerformLayout();
+			   this->flowLayoutPanel7->ResumeLayout(false);
+			   this->panel11->ResumeLayout(false);
+			   this->panel11->PerformLayout();
+			   this->panel12->ResumeLayout(false);
+			   this->panel12->PerformLayout();
 			   this->ResumeLayout(false);
 
 		   }
 #pragma endregion
 	private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {
-	}
 
-	private: System::Void buttonCalculate_Click(System::Object^ sender, System::EventArgs^ e) {
+		eggSize->Text = eggSizeData.ToString();
 
-
-		cv::Mat img = heightMap->draw();
-
-		// сохраняем изображение
-		cv::imwrite("image.png", img);
+		float valEnt = 65;
+		textBoxPercent->Text = valEnt.ToString();
 
 
-
-		Image^ image = Image::FromFile("image.png");
-		pictureBox1->Image = image;
-
-		/*ThreadStart^ threadStart = gcnew ThreadStart(this, &MyForm::Go);
-		myThread = gcnew Thread(threadStart);
-		myThread->Start();*/
+		float valLow = 85;
+		textBoxPercLow->Text = valLow.ToString();
 
 
+		heightMap->setLoweringThreshold(0.1 - (eggSizeData / 100) * valLow);
+		heightMap->setEntryThreshold(0.1 - (eggSizeData / 100) * valEnt);
 
-		/*myThread = gcnew Thread(gcnew ThreadStart(this, &MyForm::Go));
-		myThread->Start();*/
-		/*System::Drawing::Graphics^ graphics = pictureBox1->CreateGraphics();
-		System::IntPtr ptr(img.ptr());Sy
-		System::Drawing::Bitmap^ b = gcnew System::Drawing::Bitmap(img.cols, img.rows, img.step, System::Drawing::Imaging::PixelFormat::Format24bppRgb, ptr);
-		//System::Drawing::Bitmap^ b = gcnew System::Drawing::Bitmap(img.cols, img.rows, img.step, System::Drawing::Imaging::PixelFormat::Format24bppRgb, (IntPtr)img.data);
-		System::Drawing::RectangleF rect(0, 0, pictureBox1->Width, pictureBox1->Height);
-		graphics->DrawImage(b, rect);
-		*/
+		textBoxEntryThreshold->Text = heightMap->entryThreshold.ToString();
 
+		textBoxLower->Text = heightMap->loweringThreshold.ToString();
 
 	}
+
 	private: System::Void flowLayoutPanel1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
 	}
 	private: System::Void textBox8_TextChanged(System::Object^ sender, System::EventArgs^ e) {
@@ -703,6 +879,41 @@ namespace FindEggApplication {
 		textBoxDistance->Text = heightMap->distanceToConv.ToString();
 		textBoxNoise->Text = heightMap->noise.ToString();
 
+		button2->Enabled = true;
+		button1->Enabled = true;
+		buttonOpenFile->Enabled = false;
+		//textBoxEntryThreshold->Enabled = false;
+		textBoxEntryThreshold->ReadOnly = true;
+		textBoxLower->ReadOnly = true;
+		save->Enabled = true;
+		pictureBox1->Width = heightMap->count;
+		//**************************************
+		cv::Mat imageOne = heightMap->draw();
+		cv::Mat image;
+		//cv::imwrite("backgroundWorker1_DoWork.png", image);
+		//cv::cvtColor(image, image, cv::);
+		resize(imageOne, image, cv::Size(imageOne.cols, imageOne.cols));
+
+		cv::cvtColor(imageOne, image, cv::COLOR_BGR2RGB);
+
+
+		BITMAP bitmap = { 0 };
+		if (image.channels() == 3)
+		{
+			bitmap.bmWidth = image.cols;
+			bitmap.bmHeight = image.rows;
+			bitmap.bmPlanes = 1;
+			bitmap.bmBitsPixel = 24;
+			bitmap.bmWidthBytes = ((image.cols * 3) + 3) & ~3;
+			bitmap.bmBits = malloc(bitmap.bmWidthBytes * bitmap.bmHeight);
+			memset(bitmap.bmBits, 0, static_cast<size_t>(bitmap.bmWidthBytes) * bitmap.bmHeight);
+		}
+
+		MatToBitmap(image, bitmap);
+		Bitmap^ bmp = gcnew Bitmap(bitmap.bmWidth, bitmap.bmHeight, bitmap.bmWidthBytes, PixelFormat::Format24bppRgb, IntPtr(bitmap.bmBits));
+		bmp->SetResolution(image.cols, image.rows);
+
+		pictureBox1->Image = bmp;
 
 	}
 	private: System::Void textBoxUpdate_TextChanged(System::Object^ sender, System::EventArgs^ e) {
@@ -748,40 +959,30 @@ namespace FindEggApplication {
 			}
 		}
 	}
-	public: void DoSome(Bitmap^ bm) {
+	public: void chamgePictureBox1(Bitmap^ bm) {
 
 		pictureBox1->Image = bm;
 	}
-	public:Bitmap^ MatToBitmapTwo(cv::Mat& mat) {
-		int width = mat.cols;
-		int height = mat.rows;
-		int stride = mat.step;
-		IntPtr ptr(mat.ptr());
+	public: void chamgePictureBox1Mat(cv::Mat& mat) {
 
-		Bitmap^ bitmap = gcnew Bitmap(width, height, stride, PixelFormat::Format24bppRgb, ptr);
-		return bitmap;
+		ShowMatInForm(mat, pictureBox1);
 	}
+
 
 	private: System::Void backgroundWorker1_DoWork(System::Object^ sender, System::ComponentModel::DoWorkEventArgs^ e) {
 
-
-
-
-
-
-
-
-
-
-		//while (true)
+		while (isRun)
 		{
 			Thread::Sleep(33);
 
+			cv::Mat imageOne = heightMap->draw();
+			cv::Mat image;
+			//cv::imwrite("backgroundWorker1_DoWork.png", image);
+			//cv::cvtColor(image, image, cv::);
+			resize(imageOne, image, cv::Size(imageOne.cols, imageOne.cols));
 
-			cv::Mat image(heightMap->iteration, heightMap->count, CV_8UC3, cv::Scalar(0, 0, 0));
+			cv::cvtColor(imageOne, image, cv::COLOR_BGR2RGB);
 
-			cv::imwrite("backgroundWorker1_DoWork.png", image);
-			cv::line(image, cv::Point(0, 0), cv::Point(0, heightMap->iteration - 1), cv::Scalar(0, 0, 255), 3);
 
 			BITMAP bitmap = { 0 };
 			if (image.channels() == 3)
@@ -795,32 +996,185 @@ namespace FindEggApplication {
 				memset(bitmap.bmBits, 0, static_cast<size_t>(bitmap.bmWidthBytes) * bitmap.bmHeight);
 			}
 
-			//bitmap->Save();
-
-
 			MatToBitmap(image, bitmap);
 			Bitmap^ bmp = gcnew Bitmap(bitmap.bmWidth, bitmap.bmHeight, bitmap.bmWidthBytes, PixelFormat::Format24bppRgb, IntPtr(bitmap.bmBits));
-			//Bitmap^ bmp = MatToBitmapTwo(image);
 
-			bmp->Save("bmp.jpg", System::Drawing::Imaging::ImageFormat::Jpeg);
-
-
-			//cv::imwrite("image.png", image);
-			//BITMAP bm;
-			//Bitmap^ bitmap = MatToBitmap(image, bm);
-
-			//Bitmap^ bitmap = MatToBitmap(image, bm);
-			pictureBox1->Invoke(gcnew Action<Bitmap^>(this, &MyForm::DoSome), bmp);
-			//Thread::Sleep(500);
-
+			pictureBox1->Invoke(gcnew Action<Bitmap^>(this, &MyForm::chamgePictureBox1), bmp);
+			heightMap->addToVector();
 		}
 
 
 
 
 	}
+	private:Bitmap^ MatToBitmap(const cv::Mat& mat)
+	{
+		auto ptr = (uchar*)mat.data; // указатель на данные Mat
+		int width = mat.cols; // ширина Mat
+		int height = mat.rows; // высота Mat
+		int stride = mat.step; // ширина строки Mat
+
+		auto bitmap = gcnew Bitmap(width, height, stride, PixelFormat::Format24bppRgb, IntPtr(ptr));
+
+		return bitmap;
+	}
+	private:void ShowMatInForm(const cv::Mat& mat, PictureBox^ pictureBox)
+	{
+		auto bitmap = MatToBitmap(mat);
+		pictureBox->Image = bitmap;
+	}
 	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+		buttonStop->Enabled = true;
+		button1->Enabled = false;
+		isRun = true;
 		backgroundWorker1->RunWorkerAsync();
+	}
+	private: System::Void buttonStop_Click(System::Object^ sender, System::EventArgs^ e) {
+		button1->Enabled = true;
+		buttonStop->Enabled = false;
+		isRun = false;
+
+		backgroundWorker1->CancelAsync();
+
+	}
+	private: System::Void splitContainer2_Panel2_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
+	}
+	private: System::Void textBox1_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+	}
+	private: System::Void textBoxEntryThreshold_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+
+
+		float num;
+		if (System::Single::TryParse(textBoxEntryThreshold->Text, num))
+		{
+
+			heightMap->setEntryThreshold(num);
+
+
+
+
+			// преобразование выполнено успешно
+			// переменная num содержит число типа float
+		}
+		else
+		{
+			// произошла ошибка преобразования
+		}
+		//heightMap->setEntryThreshold((float)textBoxEntryThreshold->Text);
+
+	}
+	private: System::Void textBoxLower_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+		float num;
+		if (System::Single::TryParse(textBoxLower->Text, num))
+		{
+
+			heightMap->setLoweringThreshold(num);
+		}
+		else
+		{
+			// произошла ошибка преобразования
+		}
+
+	}
+	private: System::Void save_Click(System::Object^ sender, System::EventArgs^ e) {
+		cv::Mat image = heightMap->draw();
+
+		cv::namedWindow("test", cv::WINDOW_NORMAL);
+		cv::resizeWindow("test", image.cols * 3, image.rows * 3);
+
+		cv::imshow("test", image);
+
+		cv::imwrite("save.png", image);
+	}
+	private: System::Void button2_Click(System::Object^ sender, System::EventArgs^ e) {
+		heightMap = gcnew HeightMap();
+
+
+		textBoxCount->Clear();
+		textBoxIter->Clear();
+		textBoxCol->Clear();
+		textBoxUpdate->Clear();
+		textBoxWidth->Clear();
+		textBoxDistance->Clear();
+		textBoxNoise->Clear();
+
+
+		pictureBox1->Image = nullptr;
+
+		textBoxEntryThreshold->ReadOnly = false;
+		textBoxLower->ReadOnly = false;
+		button2->Enabled = false;
+		buttonOpenFile->Enabled = true;
+		save->Enabled = false;
+	}
+	private: System::Void label4_Click(System::Object^ sender, System::EventArgs^ e) {
+	}
+	private: System::Void textBoxPercent_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+		float eggSize, percent;
+		if (System::Single::TryParse(textBoxPercent->Text, percent))
+		{
+
+			//heightMap->setEntryThreshold(num);
+
+
+			float val = (eggSizeData / 100) * percent;
+			heightMap->setEntryThreshold(0.1 - val);
+
+			textBoxEntryThreshold->Text = heightMap->entryThreshold.ToString();
+			// преобразование выполнено успешно
+			// переменная num содержит число типа float
+		}
+		else
+		{
+			// произошла ошибка преобразования
+		}
+	}
+	private: System::Void eggSize_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		float val;
+		if (System::Single::TryParse(eggSize->Text, val))
+		{
+
+			eggSizeData = val;
+			//heightMap->setEntryThreshold(num);
+
+
+
+			// преобразование выполнено успешно
+			// переменная num содержит число типа float
+		}
+		else
+		{
+			// произошла ошибка преобразования
+		}
+	}
+	private: System::Void textBoxPercLow_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+
+		float  percent;
+		if (System::Single::TryParse(textBoxPercLow->Text, percent))
+		{
+
+			//heightMap->setEntryThreshold(num);
+
+
+			float val = (eggSizeData / 100) * percent;
+			heightMap->setLoweringThreshold(0.1 - val);
+
+			textBoxLower->Text = heightMap->loweringThreshold.ToString();
+
+
+
+
+			// преобразование выполнено успешно
+			// переменная num содержит число типа float
+		}
+		else
+		{
+			// произошла ошибка преобразования
+		}
 	}
 	};
 }

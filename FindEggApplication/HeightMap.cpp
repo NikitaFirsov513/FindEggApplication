@@ -6,6 +6,9 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 
+
+
+using namespace std;
 using namespace System;
 using namespace System::ComponentModel;
 using namespace System::Collections;
@@ -13,11 +16,34 @@ using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
 using namespace System::IO;
-using namespace std;
+using namespace System::Collections::Generic;
 
+struct InData
+{
+	int count;
+	int iteration;
+	int col;
+	float update;
+	float width;
+	float distanceToConv;
+	float noise;
+};
+
+
+void HeightMap::setEntryThreshold(float val)
+{
+	this->entryThreshold = val;
+}
+
+void HeightMap::setLoweringThreshold(float val)
+{
+	this->loweringThreshold = val;
+}
 
 HeightMap::HeightMap()
 {
+	this->vector = gcnew List<List<float>^>();
+	this->sensors = gcnew List<Sensors^>();
 
 }
 
@@ -28,23 +54,24 @@ HeightMap::HeightMap(int count, int iteration, int col, float update, float widt
 	this->col = col;
 	this->update = update;
 	this->width = width;
+	this->vector = gcnew List<List<float>^>();
+
 }
 
 void HeightMap::someMethod()
 {
 
 }
-
+//Чтение файла и запись в массив
 void HeightMap::readFile()
 {
-	String^ LastFileDirectory;
+	String^ LastFileDirectory = "C:\\Users\\NIKITA-PC\\Desktop\\data";
 	String^ Filename;
 
-	//If last directory is not valid then default to My Documents (if you don't include this the catch below won't occur for null strings so the start directory is undefined)
-	if (!Directory::Exists(LastFileDirectory))
-		LastFileDirectory = Environment::GetFolderPath(Environment::SpecialFolder::MyDocuments);
+	/*if (!Directory::Exists(LastFileDirectory))
+		LastFileDirectory = Environment::GetFolderPath(Environment::SpecialFolder::MyDocuments);*/
 
-	//----- FILE OPEN DIALOG BOX -----
+		//----- FILE OPEN DIALOG BOX -----
 	OpenFileDialog^ SelectFileDialog = gcnew OpenFileDialog();
 
 	SelectFileDialog->Filter = "Binary files (*.bin)|*.bin";		//"txt files (*.txt)|*.txt|All files (*.*)|*.*"
@@ -64,15 +91,24 @@ void HeightMap::readFile()
 		Filename = SelectFileDialog->FileName;
 
 
-		int count, iteration, col;
-		float update, width, distanceToConv, noise;
 
-		//string path = "C:\\Users\\NIKITA-PC\\Desktop\\data\\file.bin";
 		string path = msclr::interop::marshal_as<std::string>(Filename);
 		ifstream fin(path, ios_base::binary);
 
+		InData inData;
 
-		fin.read((char*)&count, sizeof(int));
+		fin.read(reinterpret_cast<char*>(&inData), sizeof(InData));
+
+
+		this->count = inData.count;
+		this->iteration = inData.iteration;
+		this->initIter = inData.iteration;
+		this->col = inData.col;
+		this->update = inData.update;
+		this->width = inData.width;
+		this->distanceToConv = inData.distanceToConv;
+		this->noise = inData.noise;
+		/*fin.read((char*)&count, sizeof(int));
 		fin.read((char*)&iteration, sizeof(int));
 		fin.read((char*)&col, sizeof(int));
 		fin.read((char*)&update, sizeof(float));
@@ -82,50 +118,99 @@ void HeightMap::readFile()
 
 		this->count = count;
 		this->iteration = iteration;
+		this->initIter = iteration;
 		this->col = col;
 		this->update = update;
 		this->width = width;
 		this->distanceToConv = distanceToConv;
-		this->noise = noise;
+		this->noise = noise;*/
+		//this->entryThreshold = 0.065;
 
-
-
-		this->array = new float* [count];
-
-
-		for (int i = 0; i < count; i++) {
-			array[i] = new float[iteration];
+		for (int i = 0; i < this->count; i++) {
+			this->vector->Add(gcnew List<float>());
+			this->sensors->Add(gcnew Sensors(i, this->entryThreshold));
 		}
 
-		for (int j = 0; j < iteration; j++) {
-
-
+		for (int j = 0; j < this->iteration - 1; j++) {
 			for (int i = 0; i < count; i++) {
-
-
-
 				float data;
 				fin.read((char*)&data, sizeof(float));
-				cout << data << endl;
-				array[i][j] = data;
-			}
-
-		}
-		for (int j = 0; j < iteration; j++) {
-
-
-			for (int i = 0; i < count; i++) {
-
-
-
-				float datasss = array[i][j];
-				cout << datasss << endl;
-
+				vector[i]->Add(data);
 
 			}
-
 		}
-		//STORE LAST USED DIRECTORY
+
+
+
+		//-----------------------------------------
+		//Биквадратный фильтр
+		//for (int j = 0; j < iteration - 2; j++) {
+		//	List<float>^ vector = gcnew List<float>();
+		//	// Коэффициенты фильтра
+		//	const double b0 = 1.0;
+		//	const double b1 = -1.143;
+		//	const double b2 = 0.4128;
+		//	const double a1 = -1.142;
+		//	const double a2 = 0.4123;
+		//	
+		//	
+		//	// Инициализация предыдущих входных и выходных значений
+		//	double x1 = 0.0, x2 = 0.0;
+		//	double y1 = 0.0, y2 = 0.0;
+		//	for (int i = 0; i < count - 1; i++) {
+		//		float inputVal = this->vector[i][j];
+		//		double outputVal = b0 * inputVal + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2;
+		//		x2 = x1;
+		//		x1 = inputVal;
+		//		y2 = y1;
+		//		y1 = outputVal;
+		//		this->vector[i][j] = outputVal;
+		//		//vector->Add(this->vector[i][j]);
+		//	}
+		//}
+		//-----------------------------------------
+
+
+
+
+
+		for (int j = 0; j < iteration - 2; j++) {
+			for (int i = 0; i < count - 2; i++) {
+				float val = this->vector[i][j];
+
+				if (j != iteration - 1 && j != 0 && i != count - 1 && i != 0 && val < entryThreshold)
+				{
+
+					float valLeft = this->vector[i - 1][j];
+					float valRight = this->vector[i + 1][j];
+
+					float valTop = this->vector[i][j + 1];
+					float valBot = this->vector[i][j - 1];
+
+
+					float valTopLeft = this->vector[i - 1][j + 1];
+					float valTopRight = this->vector[i + 1][j + 1];
+
+
+					float valBotLeft = this->vector[i - 1][j - 1];
+					float valBotRight = this->vector[i + 1][j - 1];
+
+					float power = (val * 4 + valLeft * 2 + valRight * 2 + valTop * 2 + valBot * 2 + valTopLeft + valTopRight + valBotLeft + valBotRight) / 16;
+
+					this->vector[i][j] = power;
+
+				}
+			}
+		}
+
+		for (int j = 0; j < this->iteration - 1; j++) {
+			for (int i = 0; i < this->count; i++) {
+
+				this->checkSensor(i, j);
+
+			}
+		}
+
 		if (Filename->LastIndexOf("\\") >= 0)
 			LastFileDirectory = Filename->Substring(0, (Filename->LastIndexOf("\\") + 1));
 
@@ -135,43 +220,243 @@ void HeightMap::readFile()
 cv::Mat HeightMap::draw()
 {
 
-
 	cv::Mat image(iteration, count, CV_8UC3, cv::Scalar(0, 0, 0));
-	//randu(image, cv::Scalar(0, 0, 0), cv::Scalar(255, 255, 255));
-
-	// изменяем значения пикселей по координатам
-	//image.at<cv::Vec3b>(100, 200) = cv::Vec3b(255, 255, 255);
-
-	// сохраняем изображение
-	//cv::imwrite("image.png", image);
 
 
-	for (int j = 0; j < iteration; j++) {
+	for (int j = iteration - 2; j >= 0; j--) {
 
 
-		for (int i = 0; i < count; i++) {
+		for (int i = count - 2; i >= 0; i--) {
 
 
-			float value = array[i][j];
-			//value = (((0.10f - value) * 1000) - 21) / 0.003f / 10000;
+			float value = this->vector[i][j];
 
-			if (value > distanceToConv - noise)
+
+			if (value == -1) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)0, (int)0, (int)255);
+				continue;
+			}
+			if (value == -2) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)255, (int)0, (int)255);
+				continue;
+			}
+
+			//if (value > 0.095f)
+			if (value > entryThreshold)
 				value = 0;
 			else
 				value = (distanceToConv + noise - value) * 20 * 255;
+			//value = 255;
 
 			if (value > 255)
 				value = 255;
 
+			image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)value, (int)value, (int)value);
 
-			image.at<cv::Vec3b>(j, i) = cv::Vec3b((int)value, (int)value, (int)value);
+		}
+	}
 
+	return image;
+}
+
+void HeightMap::addToVector()
+{
+
+	if (this->initIter >= this->iteration)
+		this->initIter = 0;
+
+	for (int i = 0; i < count; i++) {
+		vector[i]->Add(this->vector[i][initIter]);
+	}
+	this->iteration++;
+	this->initIter++;
+}
+
+void HeightMap::checkSensor(int sensorId, int iter)
+{
+	//работа с датчиком
+	float value = this->vector[sensorId][iter];
+	if (iter < 3 || iter == vector[sensorId]->Count - 2 || sensorId == 0 || sensorId == this->count - 1 || value > this->entryThreshold)
+		return;
+
+
+
+	float prevValue = this->vector[sensorId - 1][iter];
+	float nextValue = this->vector[sensorId + 1][iter];
+
+
+	Sensors^ prevSensor = sensors[sensorId - 1];
+	Sensors^ nowSensor = sensors[sensorId];
+	Sensors^ nextSensor = sensors[sensorId + 1];
+
+	//датчик отслеживается
+	if (this->sensors[sensorId]->listhen) {
+
+		//if (nowSensor->interruptEnabled) {
+		//	//прерывание разрешено
+		//	//|
+		//	//|
+		//	//\текущее значение меньше минимума?
+		//	// |+
+		//	//  обновляем значение миниимума
+		//	// |-
+		//	// \текущее значение увеличилось на заданное значение ?
+		//	//  |+запрещаем прерывание для всей группы
+
+		//	if (value < nowSensor->minValue) {
+		//		nowSensor->setMinValue(value);
+		//	}
+		//	else {
+
+		//		if (value - nowSensor->minValue > 0.001) {
+		//			//для дебага 
+		//			this->vector[sensorId][iter] = -1;
+
+
+
+
+		//			//генерируем счет яйца
+		//			//this->findCol++;
+
+		//			//запрещаем прерывание для всей группы
+		//			int groupId = sensors[sensorId]->idGroup;
+		//			int i = sensorId;
+		//			while (sensors[i]->idGroup == groupId && sensors[i]->interruptEnabled) {
+		//				sensors[i]->toggleInterruptEnabled();
+		//				i--;
+		//			}
+
+		//			int j = sensorId + 1;
+		//			while (sensors[j]->idGroup == groupId && sensors[j]->interruptEnabled) {
+		//				sensors[j]->toggleInterruptEnabled();
+		//				j++;
+		//			}
+
+		//		}
+
+		//	}
+
+		//}
+		//else {
+		//	//прерывание не разрешено
+		//	//значение достилго "loweringThreshold" =>обнуляем датчик
+		//	//if (value > loweringThreshold)
+		//	//if (value > loweringThreshold || (this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2]))
+		//	if (value > loweringThreshold ||
+		//		(this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2])) {
+		//		nowSensor->stopListhen(this->loweringThreshold);
+
+		//		checkSensor(sensorId, iter);
+
+		//	}
+		//}
+
+
+
+
+
+	}
+	else
+	{//датчик не отслеживается
+
+		 //датчик не отслеживатся и выше порога
+
+			//нужно смотреть соседние датчики
+
+
+
+		bool isPrevSensorListhen = (prevSensor->listhen);
+		bool isNextSensorListhen = (nextSensor->listhen);
+		//если рядом датчиков нет
+		if (!isPrevSensorListhen && !isNextSensorListhen) {
+
+			nowSensor->startListhen(value, -1);
+
+			findGroup(sensorId, iter);
+			return;
+		}
+		//рядом 2 датчика прослушиваются
+		if (isPrevSensorListhen && isNextSensorListhen) {
+
+			if (prevValue > nextValue)
+			{
+				if (nextSensor->interruptEnabled) {
+					nowSensor->startListhen(value, nextSensor->idGroup);
+				}
+				else {
+					nowSensor->startListhen(value, prevSensor->idGroup);
+				}
+			}
+			if (prevValue < nextValue)
+			{
+				if (prevSensor->interruptEnabled) {
+					nowSensor->startListhen(value, prevSensor->idGroup);
+				}
+				else {
+					nowSensor->startListhen(value, nextSensor->idGroup);
+				}
+			}
+			return;
 
 
 		}
 
+		if (isPrevSensorListhen)
+			nowSensor->startListhen(value, prevSensor->idGroup);
+		if (isNextSensorListhen)
+			nowSensor->startListhen(value, nextSensor->idGroup);
+
+
+
 	}
-	return image;
+}
+
+void HeightMap::findGroup(int sensorId, int iter)
+{
+
+
+	float prevValue = this->vector[sensorId - 1][iter];
+	float nextValue = this->vector[sensorId + 1][iter];
+	float value = this->vector[sensorId][iter];
+
+	Sensors^ prevSensor = sensors[sensorId - 1];
+	Sensors^ nowSensor = sensors[sensorId];
+	Sensors^ nextSensor = sensors[sensorId + 1];
+
+
+	if (prevValue > this->entryThreshold && nextValue > this->entryThreshold) {
+
+		//датчик 1н 
+		this->vector[sensorId][iter] = -2;
+
+		this->idSensors++;
+		nowSensor->startListhen(value, this->idSensors);
+		return;
+	}
+	//слева входит
+	if (prevValue < this->entryThreshold && nextValue > this->entryThreshold) {
+		int i = sensorId - 1;
+
+		while (sensors[i]->id == -1) {
+
+			i--;
+			nowSensor->startListhen(value, this->idSensors);
+
+		}
+
+
+
+
+		//идем до ближайшего активного сенсора
+		//если такого нет то новый
+
+	}
+	//справа входит
+	if (prevValue > this->entryThreshold && nextValue < this->entryThreshold) {
+
+		//идем до ближайшего активного сенсора
+		//если такого нет то новый
+	}
 }
 
 
@@ -181,3 +466,62 @@ cv::Mat HeightMap::draw()
 
 
 
+
+//есть рядом объекты
+			//if (((prevSensor->listhen && !prevSensor->interruptEnabled) && (nextSensor->listhen && !nextSensor->interruptEnabled)) ||
+			//	((prevSensor->listhen && !prevSensor->interruptEnabled) && !nextSensor->listhen) ||
+			//	((nextSensor->listhen && !nextSensor->interruptEnabled) && !prevSensor->listhen)) {
+			//	//объектов нет => создаем новую группу и обновляем минимум
+
+
+			//	if ((!prevSensor->interruptEnabled && nextValue > entryThreshold) ||
+			//		(!nextSensor->interruptEnabled && prevValue > entryThreshold)) {
+			//		return;
+			//	}
+
+			//	this->vector[sensorId][iter] = -2;
+
+			//	this->findCol++;
+			//	nowSensor->startListhen(value, this->findCol);
+			//	return;
+			//}
+			//if (!prevSensor->listhen && !nextSensor->listhen) {
+			//	//объектов нет => создаем новую группу и обновляем минимум
+			//	this->vector[sensorId][iter] = -2;
+
+			//	this->findCol++;
+			//	nowSensor->startListhen(value, this->findCol);
+
+			//}//объект есть	
+			//else
+			//{
+			//	if (prevSensor->listhen && nextSensor->listhen) {
+			//		//	объект не 1н =>добавляем данный датчик в группу по правилу меньшего значенияи обновляем мин
+			//		if (prevValue > nextValue) {
+			//			if (nextSensor->interruptEnabled) {
+			//				nowSensor->startListhen(value, nextSensor->idGroup);
+			//			}
+			//			else {
+			//				nowSensor->startListhen(value, prevSensor->idGroup);
+			//			}
+			//		}
+			//		if (prevValue < nextValue)
+			//		{
+			//			if (prevSensor->interruptEnabled) {
+			//				nowSensor->startListhen(value, prevSensor->idGroup);
+			//			}
+			//			else {
+			//				nowSensor->startListhen(value, nextSensor->idGroup);
+			//			}
+			//		}
+
+			//	}
+			//	else
+			//	{
+			//		//	объект 1н => добавляем в группу
+			//		if (prevSensor->listhen && prevSensor->interruptEnabled)
+			//			nowSensor->startListhen(value, prevSensor->idGroup);
+			//		if (nextSensor->listhen && prevSensor->interruptEnabled)
+			//			nowSensor->startListhen(value, nextSensor->idGroup);
+			//	}
+			//}

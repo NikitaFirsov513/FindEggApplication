@@ -121,6 +121,7 @@
   <ItemGroup>
     <ClCompile Include="HeightMap.cpp" />
     <ClCompile Include="MyForm.cpp" />
+    <ClCompile Include="Sensors.cpp" />
     <ClCompile Include="TestThread.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +129,7 @@
     <ClInclude Include="MyForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="Sensors.h" />
     <ClInclude Include="TestThread.h" />
   </ItemGroup>
   <ItemGroup>
