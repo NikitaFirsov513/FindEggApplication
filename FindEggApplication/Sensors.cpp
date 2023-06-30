@@ -22,7 +22,16 @@ void Sensors::startListhen(float value, int  idGroup)
 	this->minValue = value;
 	this->idGroup = idGroup;
 	this->listhen = true;
+	
 
+}
+
+void Sensors::startListhen(float value, int idGroup, bool intEna)
+{
+	this->minValue = value;
+	this->idGroup = idGroup;
+	this->listhen = true;
+	this->interruptEnabled = intEna;
 }
 
 void Sensors::stopListhen(float value)

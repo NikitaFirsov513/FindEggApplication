@@ -44,6 +44,8 @@ HeightMap::HeightMap()
 {
 	this->vector = gcnew List<List<float>^>();
 	this->sensors = gcnew List<Sensors^>();
+	this->drawVector = gcnew List<List<float>^>();
+
 
 }
 
@@ -128,6 +130,7 @@ void HeightMap::readFile()
 
 		for (int i = 0; i < this->count; i++) {
 			this->vector->Add(gcnew List<float>());
+			this->drawVector->Add(gcnew List<float>());
 			this->sensors->Add(gcnew Sensors(i, this->entryThreshold));
 		}
 
@@ -136,6 +139,7 @@ void HeightMap::readFile()
 				float data;
 				fin.read((char*)&data, sizeof(float));
 				vector[i]->Add(data);
+				drawVector[i]->Add(data);
 
 			}
 		}
@@ -198,6 +202,7 @@ void HeightMap::readFile()
 					float power = (val * 4 + valLeft * 2 + valRight * 2 + valTop * 2 + valBot * 2 + valTopLeft + valTopRight + valBotLeft + valBotRight) / 16;
 
 					this->vector[i][j] = power;
+					this->drawVector[i][j] = power;
 
 				}
 			}
@@ -229,7 +234,7 @@ cv::Mat HeightMap::draw()
 		for (int i = count - 2; i >= 0; i--) {
 
 
-			float value = this->vector[i][j];
+			float value = this->drawVector[i][j];
 
 
 			if (value == -1) {
@@ -240,7 +245,51 @@ cv::Mat HeightMap::draw()
 				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)255, (int)0, (int)255);
 				continue;
 			}
+			if (value == -3) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)255, (int)255, (int)0);
+				continue;
+			}
+			if (value == -4) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)0, (int)255, (int)0);
+				continue;
+			}
+			if (value == -5) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)0, (int)255, (int)255);
+				continue;
+			}
+			//if (value > 0.095f)
+			if (value > entryThreshold)
+				value = 0;
+			else
+				value = (distanceToConv + noise - value) * 20 * 255;
+			//value = 255;
 
+			if (value > 255)
+				value = 255;
+
+			image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)value, (int)value, (int)value);
+
+		}
+	}
+
+	return image;
+}
+cv::Mat HeightMap::drawOrig()
+{
+
+	cv::Mat image(iteration, count, CV_8UC3, cv::Scalar(0, 0, 0));
+
+
+	for (int j = iteration - 2; j >= 0; j--) {
+
+
+		for (int i = count - 2; i >= 0; i--) {
+
+
+			float value = this->vector[i][j];
+
+
+			
 			//if (value > 0.095f)
 			if (value > entryThreshold)
 				value = 0;
@@ -275,16 +324,16 @@ void HeightMap::addToVector()
 void HeightMap::checkSensor(int sensorId, int iter)
 {
 	//работа с датчиком
-	float value = this->vector[sensorId][iter];
-	if (iter < 3 || iter == vector[sensorId]->Count - 2 || sensorId == 0 || sensorId == this->count - 1 || value > this->entryThreshold)
+	if (iter < 3 || iter == vector[sensorId]->Count - 2 || sensorId == 0 || sensorId == this->count - 1)
 		return;
 
 
 
+	float value = this->vector[sensorId][iter];
 	float prevValue = this->vector[sensorId - 1][iter];
 	float nextValue = this->vector[sensorId + 1][iter];
 
-
+	int coc = this->findCol;
 	Sensors^ prevSensor = sensors[sensorId - 1];
 	Sensors^ nowSensor = sensors[sensorId];
 	Sensors^ nextSensor = sensors[sensorId + 1];
@@ -292,68 +341,60 @@ void HeightMap::checkSensor(int sensorId, int iter)
 	//датчик отслеживается
 	if (this->sensors[sensorId]->listhen) {
 
-		//if (nowSensor->interruptEnabled) {
-		//	//прерывание разрешено
-		//	//|
-		//	//|
-		//	//\текущее значение меньше минимума?
-		//	// |+
-		//	//  обновляем значение миниимума
-		//	// |-
-		//	// \текущее значение увеличилось на заданное значение ?
-		//	//  |+запрещаем прерывание для всей группы
+		if (nowSensor->interruptEnabled) {
+			//прерывания разрешены (пик не найден)
+			if (nowSensor->minValue > value) {
 
-		//	if (value < nowSensor->minValue) {
-		//		nowSensor->setMinValue(value);
-		//	}
-		//	else {
+				this->drawVector[sensorId][iter] = -4;
 
-		//		if (value - nowSensor->minValue > 0.001) {
-		//			//для дебага 
-		//			this->vector[sensorId][iter] = -1;
+				nowSensor->minValue = value;
+			}
+			else {
+				if (value - nowSensor->minValue > 0.005) {
 
 
 
+					this->drawVector[sensorId][iter] = -1;
 
-		//			//генерируем счет яйца
-		//			//this->findCol++;
+					//this->findCol++;
 
-		//			//запрещаем прерывание для всей группы
-		//			int groupId = sensors[sensorId]->idGroup;
-		//			int i = sensorId;
-		//			while (sensors[i]->idGroup == groupId && sensors[i]->interruptEnabled) {
-		//				sensors[i]->toggleInterruptEnabled();
-		//				i--;
-		//			}
+					int groupId = sensors[sensorId]->idGroup;
+					/*if (groupId == -1)
+						return;*/
+					int i = sensorId;
+					while (sensors[i]->idGroup == groupId && sensors[i]->interruptEnabled && sensors[i]->listhen) {
+						sensors[i]->toggleInterruptEnabled();
+						i--;
+					}
 
-		//			int j = sensorId + 1;
-		//			while (sensors[j]->idGroup == groupId && sensors[j]->interruptEnabled) {
-		//				sensors[j]->toggleInterruptEnabled();
-		//				j++;
-		//			}
+					int j = sensorId + 1;
+					while (sensors[j]->idGroup == groupId && sensors[j]->interruptEnabled && sensors[j]->listhen) {
+						sensors[j]->toggleInterruptEnabled();
+						j++;
+					}
+				}
+			}
 
-		//		}
+		}
+		else {
+			//прерывания не разрешены (пик найден)
+			if (value > this->entryThreshold) {
+				nowSensor->stopListhen(this->entryThreshold);
+				//checkSensor(sensorId, iter);
 
-		//	}
+			}
+			if (value < this->entryThreshold && this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2]) {
+				nowSensor->stopListhen(this->entryThreshold);
 
-		//}
-		//else {
-		//	//прерывание не разрешено
-		//	//значение достилго "loweringThreshold" =>обнуляем датчик
-		//	//if (value > loweringThreshold)
-		//	//if (value > loweringThreshold || (this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2]))
-		//	if (value > loweringThreshold ||
-		//		(this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2])) {
-		//		nowSensor->stopListhen(this->loweringThreshold);
+				this->drawVector[sensorId][iter] = -3;
 
-		//		checkSensor(sensorId, iter);
+				//checkSensor(sensorId, iter);
 
-		//	}
-		//}
-
+			}
+			this->drawVector[sensorId][iter] = -5;
 
 
-
+		}
 
 	}
 	else
@@ -362,7 +403,8 @@ void HeightMap::checkSensor(int sensorId, int iter)
 		 //датчик не отслеживатся и выше порога
 
 			//нужно смотреть соседние датчики
-
+		if (value > this->entryThreshold)
+			return;
 
 
 		bool isPrevSensorListhen = (prevSensor->listhen);
@@ -386,6 +428,7 @@ void HeightMap::checkSensor(int sensorId, int iter)
 				else {
 					nowSensor->startListhen(value, prevSensor->idGroup);
 				}
+
 			}
 			if (prevValue < nextValue)
 			{
@@ -395,6 +438,8 @@ void HeightMap::checkSensor(int sensorId, int iter)
 				else {
 					nowSensor->startListhen(value, nextSensor->idGroup);
 				}
+
+
 			}
 			return;
 
@@ -427,7 +472,7 @@ void HeightMap::findGroup(int sensorId, int iter)
 	if (prevValue > this->entryThreshold && nextValue > this->entryThreshold) {
 
 		//датчик 1н 
-		this->vector[sensorId][iter] = -2;
+		this->drawVector[sensorId][iter] = -2;
 
 		this->idSensors++;
 		nowSensor->startListhen(value, this->idSensors);
@@ -437,15 +482,18 @@ void HeightMap::findGroup(int sensorId, int iter)
 	if (prevValue < this->entryThreshold && nextValue > this->entryThreshold) {
 		int i = sensorId - 1;
 
-		while (sensors[i]->id == -1) {
-
+		while (sensors[i]->idGroup == -1 && this->vector[i][iter] < this->entryThreshold) {
 			i--;
-			nowSensor->startListhen(value, this->idSensors);
-
 		}
-
-
-
+		if (sensors[i]->idGroup != -1)
+			nowSensor->startListhen(value, sensors[i]->idGroup, sensors[i]->interruptEnabled);
+		else
+		{
+			this->drawVector[sensorId][iter] = -2;
+			this->idSensors++;
+			nowSensor->startListhen(value, this->idSensors);
+		}
+		return;
 
 		//идем до ближайшего активного сенсора
 		//если такого нет то новый
@@ -456,6 +504,22 @@ void HeightMap::findGroup(int sensorId, int iter)
 
 		//идем до ближайшего активного сенсора
 		//если такого нет то новый
+		int i = sensorId + 1;
+
+		while (sensors[i]->idGroup == -1 && this->vector[i][iter] < this->entryThreshold) {
+			i++;
+		}
+		if (sensors[i]->idGroup != -1)
+			nowSensor->startListhen(value, sensors[i]->idGroup, sensors[i]->interruptEnabled);
+		else
+		{
+			this->drawVector[sensorId][iter] = -2;
+			this->idSensors++;
+			nowSensor->startListhen(value, this->idSensors);
+		}
+		return;
+
+
 	}
 }
 

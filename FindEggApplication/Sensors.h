@@ -22,6 +22,7 @@ public:
 	Sensors(int id, float minValue);
 	void reset(float minValue);
 	void startListhen(float value, int idGroup);
+	void startListhen(float value, int idGroup,bool intEna);
 	void stopListhen(float value);
 	void setMinValue(float value);
 	void toggleInterruptEnabled();

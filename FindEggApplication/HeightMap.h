@@ -11,12 +11,14 @@ public:
 	void setEntryThreshold(float val);
 	void setLoweringThreshold(float val);
 	List<List<float>^>^ vector;
+	List<List<float>^>^ drawVector;
 	List<Sensors^>^ sensors;
 	HeightMap();
 	HeightMap(int count, int iteration, int col, float update, float width);
 	void someMethod();
 	void readFile();
 	cv::Mat draw();
+	cv::Mat drawOrig();
 	void addToVector();
 	void checkSensor(int sensorId, int iter);
 	void findGroup(int sensorId, int iter);
