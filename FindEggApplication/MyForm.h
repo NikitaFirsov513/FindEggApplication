@@ -1089,14 +1089,14 @@ namespace FindEggApplication {
 		cv::imwrite("save.png", image);
 
 
-		cv::Mat image = heightMap->drawOrig();
+		cv::Mat imageOne = heightMap->drawOrig();
 
 		cv::namedWindow("test", cv::WINDOW_NORMAL);
-		cv::resizeWindow("test", image.cols * 3, image.rows * 3);
+		cv::resizeWindow("test", imageOne.cols * 3, imageOne.rows * 3);
 
-		cv::imshow("testOrig", image);
+		cv::imshow("testOrig", imageOne);
 
-		cv::imwrite("saveOrig.png", image);
+		cv::imwrite("saveOrig.png", imageOne);
 	}
 	private: System::Void button2_Click(System::Object^ sender, System::EventArgs^ e) {
 		heightMap = gcnew HeightMap();

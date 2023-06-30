@@ -257,6 +257,14 @@ cv::Mat HeightMap::draw()
 				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)0, (int)255, (int)255);
 				continue;
 			}
+			if (value == -6) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)128, (int)0, (int)0);
+				continue;
+			}
+			if (value == -7) {
+				image.at<cv::Vec3b>(iteration - 1 - j, count - 1 - i) = cv::Vec3b((int)218, (int)165, (int)32);
+				continue;
+			}
 			//if (value > 0.095f)
 			if (value > entryThreshold)
 				value = 0;
@@ -289,7 +297,7 @@ cv::Mat HeightMap::drawOrig()
 			float value = this->vector[i][j];
 
 
-			
+
 			//if (value > 0.095f)
 			if (value > entryThreshold)
 				value = 0;
@@ -372,7 +380,10 @@ void HeightMap::checkSensor(int sensorId, int iter)
 						sensors[j]->toggleInterruptEnabled();
 						j++;
 					}
+					return;
 				}
+				this->drawVector[sensorId][iter] = -7;
+
 			}
 
 		}
@@ -381,6 +392,8 @@ void HeightMap::checkSensor(int sensorId, int iter)
 			if (value > this->entryThreshold) {
 				nowSensor->stopListhen(this->entryThreshold);
 				//checkSensor(sensorId, iter);
+				this->drawVector[sensorId][iter] = -6;
+				return;
 
 			}
 			if (value < this->entryThreshold && this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2]) {
@@ -389,6 +402,7 @@ void HeightMap::checkSensor(int sensorId, int iter)
 				this->drawVector[sensorId][iter] = -3;
 
 				//checkSensor(sensorId, iter);
+				return;
 
 			}
 			this->drawVector[sensorId][iter] = -5;
