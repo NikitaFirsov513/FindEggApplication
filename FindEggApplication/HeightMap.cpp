@@ -397,9 +397,25 @@ void HeightMap::checkSensor(int sensorId, int iter)
 
 			}
 			if (value < this->entryThreshold && this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2]) {
-				nowSensor->stopListhen(this->entryThreshold);
+				//nowSensor->stopListhen(this->entryThreshold);
 
 				this->drawVector[sensorId][iter] = -3;
+
+
+				int groupId = sensors[sensorId]->idGroup;
+				/*if (groupId == -1)
+					return;*/
+				int i = sensorId;
+				while (sensors[i]->idGroup == groupId && sensors[i]->listhen) {
+					sensors[i]->stopListhen(this->entryThreshold);
+					i--;
+				}
+
+				int j = sensorId + 1;
+				while (sensors[j]->idGroup == groupId && sensors[j]->listhen) {
+					sensors[j]->stopListhen(this->entryThreshold);
+					j++;
+				}
 
 				//checkSensor(sensorId, iter);
 				return;
@@ -460,10 +476,18 @@ void HeightMap::checkSensor(int sensorId, int iter)
 
 		}
 
-		if (isPrevSensorListhen)
+		if (isPrevSensorListhen && prevSensor->interruptEnabled)
 			nowSensor->startListhen(value, prevSensor->idGroup);
-		if (isNextSensorListhen)
+
+		if (isPrevSensorListhen && !prevSensor->interruptEnabled)
+			nowSensor->startListhen(value, prevSensor->idGroup, false);
+
+
+		if (isNextSensorListhen && nextSensor->interruptEnabled)
 			nowSensor->startListhen(value, nextSensor->idGroup);
+
+		if (isNextSensorListhen && !nextSensor->interruptEnabled)
+			nowSensor->startListhen(value, nextSensor->idGroup, false);
 
 
 
