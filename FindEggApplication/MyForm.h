@@ -140,6 +140,9 @@ namespace FindEggApplication {
 	private: System::Windows::Forms::Label^ label14;
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel6;
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel7;
+	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel8;
+	private: System::Windows::Forms::Label^ labelRes;
+
 
 
 
@@ -220,6 +223,8 @@ namespace FindEggApplication {
 			   this->panel12 = (gcnew System::Windows::Forms::Panel());
 			   this->textBoxPercLow = (gcnew System::Windows::Forms::TextBox());
 			   this->label14 = (gcnew System::Windows::Forms::Label());
+			   this->flowLayoutPanel8 = (gcnew System::Windows::Forms::FlowLayoutPanel());
+			   this->labelRes = (gcnew System::Windows::Forms::Label());
 			   this->button2 = (gcnew System::Windows::Forms::Button());
 			   this->save = (gcnew System::Windows::Forms::Button());
 			   this->buttonStop = (gcnew System::Windows::Forms::Button());
@@ -254,6 +259,7 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel7->SuspendLayout();
 			   this->panel11->SuspendLayout();
 			   this->panel12->SuspendLayout();
+			   this->flowLayoutPanel8->SuspendLayout();
 			   this->SuspendLayout();
 			   // 
 			   // splitContainer1
@@ -315,6 +321,7 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel3);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel6);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel7);
+			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel8);
 			   this->flowLayoutPanel1->FlowDirection = System::Windows::Forms::FlowDirection::TopDown;
 			   this->flowLayoutPanel1->Location = System::Drawing::Point(-3, -2);
 			   this->flowLayoutPanel1->Name = L"flowLayoutPanel1";
@@ -716,6 +723,25 @@ namespace FindEggApplication {
 			   this->label14->TabIndex = 2;
 			   this->label14->Text = L"percLow";
 			   // 
+			   // flowLayoutPanel8
+			   // 
+			   this->flowLayoutPanel8->Controls->Add(this->labelRes);
+			   this->flowLayoutPanel8->Location = System::Drawing::Point(3, 327);
+			   this->flowLayoutPanel8->Name = L"flowLayoutPanel8";
+			   this->flowLayoutPanel8->Size = System::Drawing::Size(245, 61);
+			   this->flowLayoutPanel8->TabIndex = 15;
+			   // 
+			   // labelRes
+			   // 
+			   this->labelRes->AutoSize = true;
+			   this->labelRes->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 30, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				   static_cast<System::Byte>(204)));
+			   this->labelRes->Location = System::Drawing::Point(3, 0);
+			   this->labelRes->Name = L"labelRes";
+			   this->labelRes->Size = System::Drawing::Size(42, 46);
+			   this->labelRes->TabIndex = 0;
+			   this->labelRes->Text = L"0";
+			   // 
 			   // button2
 			   // 
 			   this->button2->Enabled = false;
@@ -837,6 +863,8 @@ namespace FindEggApplication {
 			   this->panel11->PerformLayout();
 			   this->panel12->ResumeLayout(false);
 			   this->panel12->PerformLayout();
+			   this->flowLayoutPanel8->ResumeLayout(false);
+			   this->flowLayoutPanel8->PerformLayout();
 			   this->ResumeLayout(false);
 
 		   }
@@ -845,7 +873,7 @@ namespace FindEggApplication {
 
 		eggSize->Text = eggSizeData.ToString();
 
-		float valEnt = 65;
+		float valEnt = 85;
 		textBoxPercent->Text = valEnt.ToString();
 
 
@@ -1097,6 +1125,8 @@ namespace FindEggApplication {
 		cv::imshow("testOrig", imageOne);
 
 		cv::imwrite("saveOrig.png", imageOne);
+
+		labelRes->Text = heightMap->findCol.ToString();
 	}
 	private: System::Void button2_Click(System::Object^ sender, System::EventArgs^ e) {
 		heightMap = gcnew HeightMap();
@@ -1110,6 +1140,7 @@ namespace FindEggApplication {
 		textBoxDistance->Clear();
 		textBoxNoise->Clear();
 
+		labelRes->Text = "0";
 
 		pictureBox1->Image = nullptr;
 

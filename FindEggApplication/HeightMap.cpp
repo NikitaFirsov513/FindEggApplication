@@ -176,7 +176,7 @@ void HeightMap::readFile()
 
 
 
-
+		//скользь
 
 		for (int j = 0; j < iteration - 2; j++) {
 			for (int i = 0; i < count - 2; i++) {
@@ -208,6 +208,76 @@ void HeightMap::readFile()
 			}
 		}
 
+
+
+		//for (int j = 2; j < iteration - 3; j++) {
+		//	for (int i = 2; i < count - 2; i++) {
+		//		float val = this->vector[i][j];
+
+		//		if (j != iteration - 1 && j != 0 && i != count - 1 && i != 0 && val < entryThreshold)
+		//		{
+
+		//			float valLeft = this->vector[i - 1][j];
+		//			float valLeftLeft = this->vector[i - 2][j];
+
+		//			float valRight = this->vector[i + 1][j];
+		//			float valRightRight = this->vector[i + 2][j];
+
+		//			float valTop = this->vector[i][j + 1];
+		//			float valTopTop = this->vector[i][j + 2];
+
+		//			float valBot = this->vector[i][j - 1];
+		//			float valBotBot = this->vector[i][j - 2];
+
+
+		//			float valTopLeft = this->vector[i - 1][j + 1];
+		//			float valTopRight = this->vector[i + 1][j + 1];
+
+
+		//			float valBotLeft = this->vector[i - 1][j - 1];
+		//			float valBotRight = this->vector[i + 1][j - 1];
+
+		//			//float power = (val * 4 + valLeft * 2 + valRight * 2 + valTop * 2 + valBot * 2 + valTopLeft + valTopRight + valBotLeft + valBotRight) / 16;
+		//			float power = (val + valLeft + valLeftLeft + valRight + valRightRight + valTop + valTopTop + valBot + valBotBot + valTopLeft + valTopRight + valBotLeft + valBotRight) / 13;
+		//			this->vector[i][j] = power;
+		//			this->drawVector[i][j] = power;
+
+		//		}
+		//	}
+		//}
+
+		/*for (int j = 0; j < iteration - 2; j++) {
+			for (int i = 0; i < count - 2; i++) {
+				float val = this->vector[i][j];
+
+				if (j != iteration - 1 && j != 0 && i != count - 1 && i != 0 && val < entryThreshold)
+				{
+
+					float valLeft = this->vector[i - 1][j];
+					float valRight = this->vector[i + 1][j];
+
+					float valTop = this->vector[i][j + 1];
+					float valBot = this->vector[i][j - 1];
+
+
+					float valTopLeft = this->vector[i - 1][j + 1];
+					float valTopRight = this->vector[i + 1][j + 1];
+
+
+					float valBotLeft = this->vector[i - 1][j - 1];
+					float valBotRight = this->vector[i + 1][j - 1];
+
+					float power = (val * 4 + valLeft * 2 + valRight * 2 + valTop * 2 + valBot * 2 + valTopLeft + valTopRight + valBotLeft + valBotRight) / 16;
+
+					this->vector[i][j] = power;
+					this->drawVector[i][j] = power;
+
+				}
+			}
+		}*/
+
+
+
 		for (int j = 0; j < this->iteration - 1; j++) {
 			for (int i = 0; i < this->count; i++) {
 
@@ -215,7 +285,7 @@ void HeightMap::readFile()
 
 			}
 		}
-
+		fin.close();
 		if (Filename->LastIndexOf("\\") >= 0)
 			LastFileDirectory = Filename->Substring(0, (Filename->LastIndexOf("\\") + 1));
 
@@ -298,8 +368,8 @@ cv::Mat HeightMap::drawOrig()
 
 
 
-			//if (value > 0.095f)
-			if (value > entryThreshold)
+			//if (value > entryThreshold)
+			if (value > 0.095f)
 				value = 0;
 			else
 				value = (distanceToConv + noise - value) * 20 * 255;
@@ -364,7 +434,7 @@ void HeightMap::checkSensor(int sensorId, int iter)
 
 					this->drawVector[sensorId][iter] = -1;
 
-					//this->findCol++;
+					this->findCol++;
 
 					int groupId = sensors[sensorId]->idGroup;
 					/*if (groupId == -1)
@@ -396,9 +466,25 @@ void HeightMap::checkSensor(int sensorId, int iter)
 				return;
 
 			}
-			if (value < this->entryThreshold && this->vector[sensorId][iter - 1] > value && this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2]) {
+			if (value < this->entryThreshold && this->vector[sensorId][iter - 1] > value &&
+				this->vector[sensorId][iter - 1] > this->vector[sensorId][iter - 2] &&
+				((prevSensor->idGroup == nowSensor->idGroup && this->vector[sensorId - 1][iter - 1] > prevValue && this->vector[sensorId - 1][iter - 1] > this->vector[sensorId - 1][iter - 2]) ||
+					(nextSensor->idGroup == nowSensor->idGroup && this->vector[sensorId + 1][iter - 1] > nextValue && this->vector[sensorId + 1][iter - 1] > this->vector[sensorId + 1][iter - 2]) ||
+					(prevSensor->idGroup != nowSensor->idGroup && nextSensor->idGroup != nowSensor->idGroup) ||
+					(prevValue > this->entryThreshold || nextValue > this->entryThreshold) ||
+					(this->vector[sensorId - 1][iter - 1] > this->entryThreshold || this->vector[sensorId + 1][iter - 1] > this->entryThreshold))) {
 				//nowSensor->stopListhen(this->entryThreshold);
-
+				/*&&
+				((prevSensor->idGroup == nowSensor->idGroup &&
+					prevValue < this->entryThreshold &&
+					this->vector[sensorId - 1][iter - 1] >prevValue &&
+					this->vector[sensorId - 1][iter - 1] > this->vector[sensorId - 1][iter - 2]) ||
+					(nextSensor->idGroup == nowSensor->idGroup &&
+						nextValue < this->entryThreshold &&
+						this->vector[sensorId + 1][iter - 1] >nextValue &&
+						this->vector[sensorId + 1][iter - 1] > this->vector[sensorId + 1][iter - 2]) ||
+					(prevValue > this->entryThreshold && nextValue > this->entryThreshold))
+					*/
 				this->drawVector[sensorId][iter] = -3;
 
 
@@ -416,6 +502,8 @@ void HeightMap::checkSensor(int sensorId, int iter)
 					sensors[j]->stopListhen(this->entryThreshold);
 					j++;
 				}
+
+				//checkSensor(sensorId, iter);
 
 				//checkSensor(sensorId, iter);
 				return;
@@ -440,8 +528,8 @@ void HeightMap::checkSensor(int sensorId, int iter)
 		bool isPrevSensorListhen = (prevSensor->listhen);
 		bool isNextSensorListhen = (nextSensor->listhen);
 		//если рядом датчиков нет
-		if (!isPrevSensorListhen && !isNextSensorListhen) {
-
+		if (!isPrevSensorListhen && !isNextSensorListhen && (prevValue < this->entryThreshold || nextValue < this->entryThreshold)) {
+			//
 			nowSensor->startListhen(value, -1);
 
 			findGroup(sensorId, iter);
@@ -475,6 +563,22 @@ void HeightMap::checkSensor(int sensorId, int iter)
 
 
 		}
+
+		/*if (isPrevSensorListhen && value < prevValue && value < nextValue) {
+			this->drawVector[sensorId][iter] = -2;
+
+			this->idSensors++;
+			nowSensor->startListhen(value, this->idSensors);
+			return;
+		}
+
+		if (isNextSensorListhen && value < prevValue && value < nextValue) {
+			this->drawVector[sensorId][iter] = -2;
+
+			this->idSensors++;
+			nowSensor->startListhen(value, this->idSensors);
+			return;
+		}*/
 
 		if (isPrevSensorListhen && prevSensor->interruptEnabled)
 			nowSensor->startListhen(value, prevSensor->idGroup);
@@ -516,6 +620,15 @@ void HeightMap::findGroup(int sensorId, int iter)
 		nowSensor->startListhen(value, this->idSensors);
 		return;
 	}
+	if (prevValue < this->entryThreshold && nextValue < this->entryThreshold) {
+
+		//датчик по центру 
+		this->drawVector[sensorId][iter] = -2;
+
+		this->idSensors++;
+		nowSensor->startListhen(value, this->idSensors);
+		return;
+	}
 	//слева входит
 	if (prevValue < this->entryThreshold && nextValue > this->entryThreshold) {
 		int i = sensorId - 1;
@@ -523,7 +636,7 @@ void HeightMap::findGroup(int sensorId, int iter)
 		while (sensors[i]->idGroup == -1 && this->vector[i][iter] < this->entryThreshold) {
 			i--;
 		}
-		if (sensors[i]->idGroup != -1)
+		if (sensors[i]->idGroup != -1 && sensorId - i <= 5 && this->vector[i][iter] < this->entryThreshold)
 			nowSensor->startListhen(value, sensors[i]->idGroup, sensors[i]->interruptEnabled);
 		else
 		{
@@ -547,7 +660,7 @@ void HeightMap::findGroup(int sensorId, int iter)
 		while (sensors[i]->idGroup == -1 && this->vector[i][iter] < this->entryThreshold) {
 			i++;
 		}
-		if (sensors[i]->idGroup != -1)
+		if (sensors[i]->idGroup != -1 && i - sensorId <= 5 && this->vector[i][iter] < this->entryThreshold)
 			nowSensor->startListhen(value, sensors[i]->idGroup, sensors[i]->interruptEnabled);
 		else
 		{
