@@ -49,14 +49,21 @@ HeightMap::HeightMap()
 
 }
 
-HeightMap::HeightMap(int count, int iteration, int col, float update, float width)
+HeightMap::HeightMap(int count, int iteration, int col, float update, float width, float distanceToConv)
 {
+
+	this->vector = gcnew List<List<float>^>();
+	this->sensors = gcnew List<Sensors^>();
+	this->drawVector = gcnew List<List<float>^>();
+
 	this->count = count;
 	this->iteration = iteration;
 	this->col = col;
 	this->update = update;
 	this->width = width;
-	this->vector = gcnew List<List<float>^>();
+	this->distanceToConv = distanceToConv;
+
+	this->initSensors();
 
 }
 
@@ -399,6 +406,13 @@ void HeightMap::addToVector()
 	this->initIter++;
 }
 
+void HeightMap::addToVector(List<float>^ newData)
+{
+	for (int i = 0; i < count; i++) {
+		this->vector[i]->Add(newData[i]);
+	}
+}
+
 void HeightMap::checkSensor(int sensorId, int iter)
 {
 	//работа с датчиком
@@ -580,17 +594,17 @@ void HeightMap::checkSensor(int sensorId, int iter)
 			return;
 		}*/
 
-		if (isPrevSensorListhen && prevSensor->interruptEnabled)
+		if (isPrevSensorListhen && prevSensor->interruptEnabled && prevValue < this->entryThreshold)
 			nowSensor->startListhen(value, prevSensor->idGroup);
 
-		if (isPrevSensorListhen && !prevSensor->interruptEnabled)
+		if (isPrevSensorListhen && !prevSensor->interruptEnabled && prevValue < this->entryThreshold)
 			nowSensor->startListhen(value, prevSensor->idGroup, false);
 
 
-		if (isNextSensorListhen && nextSensor->interruptEnabled)
+		if (isNextSensorListhen && nextSensor->interruptEnabled && nextValue < this->entryThreshold)
 			nowSensor->startListhen(value, nextSensor->idGroup);
 
-		if (isNextSensorListhen && !nextSensor->interruptEnabled)
+		if (isNextSensorListhen && !nextSensor->interruptEnabled && nextValue < this->entryThreshold)
 			nowSensor->startListhen(value, nextSensor->idGroup, false);
 
 
@@ -636,7 +650,7 @@ void HeightMap::findGroup(int sensorId, int iter)
 		while (sensors[i]->idGroup == -1 && this->vector[i][iter] < this->entryThreshold) {
 			i--;
 		}
-		if (sensors[i]->idGroup != -1 && sensorId - i <= 5 && this->vector[i][iter] < this->entryThreshold)
+		if (sensors[i]->idGroup != -1 && sensorId - i < 5 && this->vector[i][iter] < this->entryThreshold)
 			nowSensor->startListhen(value, sensors[i]->idGroup, sensors[i]->interruptEnabled);
 		else
 		{
@@ -660,7 +674,7 @@ void HeightMap::findGroup(int sensorId, int iter)
 		while (sensors[i]->idGroup == -1 && this->vector[i][iter] < this->entryThreshold) {
 			i++;
 		}
-		if (sensors[i]->idGroup != -1 && i - sensorId <= 5 && this->vector[i][iter] < this->entryThreshold)
+		if (sensors[i]->idGroup != -1 && i - sensorId < 5 && this->vector[i][iter] < this->entryThreshold)
 			nowSensor->startListhen(value, sensors[i]->idGroup, sensors[i]->interruptEnabled);
 		else
 		{
@@ -671,6 +685,15 @@ void HeightMap::findGroup(int sensorId, int iter)
 		return;
 
 
+	}
+}
+
+void HeightMap::initSensors()
+{
+	for (int i = 0; i < this->count; i++) {
+		this->vector->Add(gcnew List<float>());
+		this->drawVector->Add(gcnew List<float>());
+		this->sensors->Add(gcnew Sensors(i, this->entryThreshold));
 	}
 }
 

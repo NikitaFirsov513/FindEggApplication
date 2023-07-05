@@ -6,7 +6,7 @@ using namespace System::Collections::Generic;
 ref class HeightMap
 {
 public:
-	int count, iteration, initIter, col, findCol = 0, idSensors = 0;
+	int count = 1, iteration, initIter, col, findCol = 0, idSensors = 0;
 	float update, width, distanceToConv, noise, entryThreshold = 0.07595, loweringThreshold = 0.06855;
 	void setEntryThreshold(float val);
 	void setLoweringThreshold(float val);
@@ -14,14 +14,15 @@ public:
 	List<List<float>^>^ drawVector;
 	List<Sensors^>^ sensors;
 	HeightMap();
-	HeightMap(int count, int iteration, int col, float update, float width);
+	HeightMap(int count, int iteration, int col, float update, float width, float distanceToConv);
 	void someMethod();
 	void readFile();
 	cv::Mat draw();
 	cv::Mat drawOrig();
 	void addToVector();
+	void addToVector(List<float>^ newData);
 	void checkSensor(int sensorId, int iter);
 	void findGroup(int sensorId, int iter);
 private:
-
+	void initSensors();
 };
