@@ -21,8 +21,12 @@ public:
 	cv::Mat drawOrig();
 	void addToVector();
 	void addToVector(List<float>^ newData);
+	void checkSensors();
 	void checkSensor(int sensorId, int iter);
 	void findGroup(int sensorId, int iter);
+	void movingAverage();
 private:
 	void initSensors();
+	bool isSkip = false;
+	int sensorSkip;
 };

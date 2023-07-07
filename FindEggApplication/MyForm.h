@@ -63,6 +63,8 @@ namespace FindEggApplication {
 		HeightMap^ heightMap;
 		Thread^ myThread;
 		float eggSizeData = 0.037;
+		float distanceToConv = 0.1;
+		int count = 10;
 		bool isRun;
 	private: System::Windows::Forms::SplitContainer^ splitContainer1;
 
@@ -236,14 +238,14 @@ namespace FindEggApplication {
 			   this->label14 = (gcnew System::Windows::Forms::Label());
 			   this->flowLayoutPanel8 = (gcnew System::Windows::Forms::FlowLayoutPanel());
 			   this->labelRes = (gcnew System::Windows::Forms::Label());
+			   this->flowLayoutPanel9 = (gcnew System::Windows::Forms::FlowLayoutPanel());
+			   this->labelTest = (gcnew System::Windows::Forms::Label());
 			   this->button2 = (gcnew System::Windows::Forms::Button());
 			   this->save = (gcnew System::Windows::Forms::Button());
 			   this->buttonStop = (gcnew System::Windows::Forms::Button());
 			   this->button1 = (gcnew System::Windows::Forms::Button());
 			   this->buttonOpenFile = (gcnew System::Windows::Forms::Button());
 			   this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
-			   this->flowLayoutPanel9 = (gcnew System::Windows::Forms::FlowLayoutPanel());
-			   this->labelTest = (gcnew System::Windows::Forms::Label());
 			   (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer1))->BeginInit();
 			   this->splitContainer1->Panel1->SuspendLayout();
 			   this->splitContainer1->Panel2->SuspendLayout();
@@ -757,6 +759,25 @@ namespace FindEggApplication {
 			   this->labelRes->TabIndex = 0;
 			   this->labelRes->Text = L"0";
 			   // 
+			   // flowLayoutPanel9
+			   // 
+			   this->flowLayoutPanel9->Controls->Add(this->labelTest);
+			   this->flowLayoutPanel9->Location = System::Drawing::Point(3, 394);
+			   this->flowLayoutPanel9->Name = L"flowLayoutPanel9";
+			   this->flowLayoutPanel9->Size = System::Drawing::Size(245, 61);
+			   this->flowLayoutPanel9->TabIndex = 16;
+			   // 
+			   // labelTest
+			   // 
+			   this->labelTest->AutoSize = true;
+			   this->labelTest->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				   static_cast<System::Byte>(204)));
+			   this->labelTest->Location = System::Drawing::Point(3, 0);
+			   this->labelTest->Name = L"labelTest";
+			   this->labelTest->Size = System::Drawing::Size(14, 16);
+			   this->labelTest->TabIndex = 0;
+			   this->labelTest->Text = L"0";
+			   // 
 			   // button2
 			   // 
 			   this->button2->Enabled = false;
@@ -772,7 +793,6 @@ namespace FindEggApplication {
 			   // 
 			   // save
 			   // 
-			   this->save->Enabled = false;
 			   this->save->Font = (gcnew System::Drawing::Font(L"Segoe UI", 8.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
 				   static_cast<System::Byte>(0)));
 			   this->save->Location = System::Drawing::Point(3, 95);
@@ -824,25 +844,6 @@ namespace FindEggApplication {
 			   // 
 			   this->backgroundWorker1->WorkerSupportsCancellation = true;
 			   this->backgroundWorker1->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &MyForm::backgroundWorker1_DoWork);
-			   // 
-			   // flowLayoutPanel9
-			   // 
-			   this->flowLayoutPanel9->Controls->Add(this->labelTest);
-			   this->flowLayoutPanel9->Location = System::Drawing::Point(3, 394);
-			   this->flowLayoutPanel9->Name = L"flowLayoutPanel9";
-			   this->flowLayoutPanel9->Size = System::Drawing::Size(245, 61);
-			   this->flowLayoutPanel9->TabIndex = 16;
-			   // 
-			   // labelTest
-			   // 
-			   this->labelTest->AutoSize = true;
-			   this->labelTest->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				   static_cast<System::Byte>(204)));
-			   this->labelTest->Location = System::Drawing::Point(3, 0);
-			   this->labelTest->Name = L"labelTest";
-			   this->labelTest->Size = System::Drawing::Size(14, 16);
-			   this->labelTest->TabIndex = 0;
-			   this->labelTest->Text = L"0";
 			   // 
 			   // MyForm
 			   // 
@@ -915,9 +916,9 @@ namespace FindEggApplication {
 		float valLow = 85;
 		textBoxPercLow->Text = valLow.ToString();
 
-
-		heightMap->setLoweringThreshold(0.1 - (eggSizeData / 100) * valLow);
-		heightMap->setEntryThreshold(0.1 - (eggSizeData / 100) * valEnt);
+		//изменить порог
+		heightMap->setLoweringThreshold(distanceToConv - (eggSizeData / 100) * valLow);
+		heightMap->setEntryThreshold(distanceToConv - (eggSizeData / 100) * valEnt);
 
 		textBoxEntryThreshold->Text = heightMap->entryThreshold.ToString();
 
@@ -1040,73 +1041,46 @@ namespace FindEggApplication {
 	private: System::Void backgroundWorker1_DoWork(System::Object^ sender, System::ComponentModel::DoWorkEventArgs^ e) {
 
 		DWORD bytesRead;
-		List<float>^ vector = gcnew List<float>();
 
 		while (isRun)
 		{
-			// Чтение данных из COM-порта
-			const int bufferSize = sizeof(float) * 3;
-			char* buffer[bufferSize];
-			if (ReadFile(hSerial, buffer, bufferSize, &bytesRead, NULL))
-			{
-				// Парсинг массива float из полученных данных
-				float* values = reinterpret_cast<float*>(buffer);
-				int floatCount = bytesRead / sizeof(float);
+
+			char buffer[4];
+			int i = 0;
+			List<float>^ vector = gcnew List<float>();
+			String^ strTest = "";
+			while (1) {
+				ReadFile(hSerial, buffer, sizeof(buffer), &bytesRead, NULL); // прочитайте байты из порта
 
 
-				String^ str = "";
-				for (int i = 0; i < floatCount; i++)
-				{
-					//floatArray.push_back(values[i]);
-					vector->Add(values[i]);
-					str += values[i] + "  ";
-
+				if (bytesRead != 4)
+					continue;
+				string str(buffer, sizeof(buffer));
+				if (str == "Data")	std::cout << "Data: " << str << std::endl;
+				else {
+					float* check = (float*)buffer;
+					std::cout << "Data: " << *check << endl;
+					vector->Add(*check);
+					i++;
+					strTest += *check + "\n";
 				}
 
-				labelTest->Invoke(gcnew Action<String^>(this, &MyForm::changeLableTest), str);
-				//labelTest->Text = str;
+				if (i == count) {
+					heightMap->addToVector(vector);
+					heightMap->movingAverage();
+					heightMap->checkSensors();
 
-				// TODO: обновление UI считанными значениями floatArray
-			}
-			else
-			{
-				std::cerr << "Ошибка чтения COM-порта!" << std::endl;
+
+					labelTest->Invoke(gcnew Action<String^>(this, &MyForm::changeLableTest), strTest);
+					vector = gcnew List<float>();
+					i = 0;
+					strTest = "";
+				}
+
 			}
 		}
 
-		// Закрытие COM-порта
 		CloseHandle(hSerial);
-		//while (isRun)
-		//{
-		//	Thread::Sleep(33);
-
-		//	cv::Mat imageOne = heightMap->draw();
-		//	cv::Mat image;
-		//	//cv::imwrite("backgroundWorker1_DoWork.png", image);
-		//	//cv::cvtColor(image, image, cv::);
-		//	resize(imageOne, image, cv::Size(imageOne.cols, imageOne.cols));
-
-		//	cv::cvtColor(imageOne, image, cv::COLOR_BGR2RGB);
-
-
-		//	BITMAP bitmap = { 0 };
-		//	if (image.channels() == 3)
-		//	{
-		//		bitmap.bmWidth = image.cols;
-		//		bitmap.bmHeight = image.rows;
-		//		bitmap.bmPlanes = 1;
-		//		bitmap.bmBitsPixel = 24;
-		//		bitmap.bmWidthBytes = ((image.cols * 3) + 3) & ~3;
-		//		bitmap.bmBits = malloc(bitmap.bmWidthBytes * bitmap.bmHeight);
-		//		memset(bitmap.bmBits, 0, static_cast<size_t>(bitmap.bmWidthBytes) * bitmap.bmHeight);
-		//	}
-
-		//	MatToBitmap(image, bitmap);
-		//	Bitmap^ bmp = gcnew Bitmap(bitmap.bmWidth, bitmap.bmHeight, bitmap.bmWidthBytes, PixelFormat::Format24bppRgb, IntPtr(bitmap.bmBits));
-
-		//	pictureBox1->Invoke(gcnew Action<Bitmap^>(this, &MyForm::chamgePictureBox1), bmp);
-		//	heightMap->addToVector();
-		//}
 
 
 
@@ -1131,8 +1105,8 @@ namespace FindEggApplication {
 	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
 
 
-		int count = 5, iteration = 0, col = 0;
-		float update = 0, width = 0, distanceToConv = 0.1f;
+		int iteration = 0, col = 0;
+		float update = 0, width = 0;
 
 		heightMap = gcnew HeightMap(count, iteration, col, update, width, distanceToConv);
 
@@ -1150,34 +1124,24 @@ namespace FindEggApplication {
 			}
 			else {
 				dcbSerialParams.BaudRate = CBR_115200;
-				//dcbSerialParams.ByteSize = 8;
+				dcbSerialParams.ByteSize = 8;
 				dcbSerialParams.StopBits = ONESTOPBIT;
 				dcbSerialParams.Parity = NOPARITY;
 				if (!SetCommState(hSerial, &dcbSerialParams)) {
 					// Обработка ошибки
 				}
 				else {
-					// Создание экземпляра BackgroundWorker
-					//System::ComponentModel::BackgroundWorker^ backgroundWorker1;
-
-					// Определение события DoWork
-					//backgroundWorker1->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &Form1::backgroundWorker1_DoWork);
-
-					// Запуск фонового потока
+					buttonStop->Enabled = true;
+					isRun = true;
 					backgroundWorker1->RunWorkerAsync();
 				}
 			}
 		}
 
-		isRun = true;
 
-		/*
-		buttonStop->Enabled = true;
-		button1->Enabled = false;
-		isRun = true;
-		backgroundWorker1->RunWorkerAsync();
-		*/
-		//SerialPort^ mySerialPort
+
+
+
 	}
 	private: void ReadComPortInBackground()
 	{
@@ -1295,7 +1259,7 @@ namespace FindEggApplication {
 
 
 			float val = (eggSizeData / 100) * percent;
-			heightMap->setEntryThreshold(0.1 - val);
+			heightMap->setEntryThreshold(distanceToConv - val);
 
 			textBoxEntryThreshold->Text = heightMap->entryThreshold.ToString();
 			// преобразование выполнено успешно
@@ -1335,7 +1299,7 @@ namespace FindEggApplication {
 
 
 			float val = (eggSizeData / 100) * percent;
-			heightMap->setLoweringThreshold(0.1 - val);
+			heightMap->setLoweringThreshold(distanceToConv - val);
 
 			textBoxLower->Text = heightMap->loweringThreshold.ToString();
 
