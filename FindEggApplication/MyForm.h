@@ -909,7 +909,7 @@ namespace FindEggApplication {
 
 		eggSize->Text = eggSizeData.ToString();
 
-		float valEnt = 85;
+		float valEnt = 92;
 		textBoxPercent->Text = valEnt.ToString();
 
 

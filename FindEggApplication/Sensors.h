@@ -16,13 +16,18 @@ ref class Sensors
 public:
 	int id;
 	int idGroup;
-	float minValue;
+	float minValue, maxValue;
 	bool listhen;
 	bool interruptEnabled;
-	Sensors(int id, float minValue);
+	bool groupInterruptEnabled;
+
+	Sensors(int id, float minValue, float maxValue);
 	void reset(float minValue);
-	void startListhen(float value, int idGroup);
-	void startListhen(float value, int idGroup,bool intEna);
+	void startListhen(float value, int idGroup, float maxValue);
+	void startListhen(float value, int idGroup, bool intEna);
+	void startListhen(float value, bool intEna);
+	void startListhen(float value, bool intEna, bool gIntEna);
+
 	void stopListhen(float value);
 	void setMinValue(float value);
 	void toggleInterruptEnabled();
