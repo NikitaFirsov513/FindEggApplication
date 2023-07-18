@@ -14,24 +14,29 @@ using namespace System::Collections::Generic;
 ref class Sensors
 {
 public:
-	int id;
-	int idGroup;
-	float minValue, maxValue;
+
+	float value;
+	float deltaY;
+
+	bool center;
 	bool listhen;
-	bool interruptEnabled;
-	bool groupInterruptEnabled;
+	bool isFindTop;
 
-	Sensors(int id, float minValue, float maxValue);
-	void reset(float minValue);
-	void startListhen(float value, int idGroup, float maxValue);
-	void startListhen(float value, int idGroup, bool intEna);
-	void startListhen(float value, bool intEna);
-	void startListhen(float value, bool intEna, bool gIntEna);
+	int idGroup;
 
-	void stopListhen(float value);
-	void setMinValue(float value);
-	void toggleInterruptEnabled();
+	Sensors();
+	Sensors(bool center, bool listhen, float value, float deltaY);
 
+	void startListhen(bool center, bool listhen, float value, float deltaY, int idGroup,bool isFindTop);
 
+	void resetSensor(float value);
+
+	void setValue(float value);
+	void setDeltaY(float deltaY);
+
+	void setCenter(bool center);
+	void setIsFindTop(bool isFindTop);
+
+	void setIdGroup(int idGroup);
 };
 

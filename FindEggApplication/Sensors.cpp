@@ -1,81 +1,65 @@
 #include "Sensors.h"
 
-Sensors::Sensors(int id, float minValue, float maxValue)
+Sensors::Sensors()
 {
-	this->id = id;
-	this->minValue = minValue;
-	this->maxValue = maxValue;
-	this->interruptEnabled = true;
-	this->groupInterruptEnabled = true;
-	this->idGroup = -1;
-	this->listhen = false;
+
+
 }
 
-void Sensors::reset(float minValue)
+Sensors::Sensors(bool center, bool listhen, float value, float deltaY)
 {
-	this->minValue = minValue;
-	this->interruptEnabled = true;
-	this->listhen = false;
+	this->center = center;
+	this->listhen = listhen;
+	this->value = value;
+	this->isFindTop = false;
+	this->deltaY = deltaY;
 	this->idGroup = -1;
 }
 
-void Sensors::startListhen(float value, int  idGroup, float maxValue)
+void Sensors::startListhen(bool center, bool listhen, float value, float deltaY, int idGroup, bool isFindTop)
 {
-	this->minValue = value;
+	this->center = center;
+	this->listhen = listhen;
+	this->value = value;
+	this->isFindTop = isFindTop;
+	this->deltaY = deltaY;
+
 	this->idGroup = idGroup;
-	this->maxValue = maxValue;
-	this->listhen = true;
-
-
 }
 
-void Sensors::startListhen(float value, int idGroup, bool intEna)
+void Sensors::resetSensor(float value)
 {
-	this->minValue = value;
-	this->idGroup = idGroup;
-	this->listhen = true;
-	this->interruptEnabled = intEna;
-}
-
-void Sensors::startListhen(float value, bool intEna)
-{
-	this->minValue = value;
-	this->maxValue = value;
-	this->listhen = true;
-	this->groupInterruptEnabled = true;
-	this->interruptEnabled = intEna;
-}
-
-void Sensors::startListhen(float value, bool intEna, bool gIntEna)
-{
-	this->minValue = value;
-	this->maxValue = value;
-	this->listhen = true;
-	this->groupInterruptEnabled = gIntEna;
-	this->interruptEnabled = intEna;
-}
-
-void Sensors::stopListhen(float value)
-{
-
-	this->minValue = value;
-	this->maxValue = value;
-	this->idGroup = -1;
+	this->center = false;
 	this->listhen = false;
-	this->interruptEnabled = true;
-	this->groupInterruptEnabled = true;
-
+	this->isFindTop = false;
+	this->value = value;
+	this->deltaY = 0;
+	this->idGroup = -1;
 }
 
-void Sensors::setMinValue(float value)
+void Sensors::setValue(float value)
 {
-	this->minValue = value;
+	this->value = value;
 }
 
-void Sensors::toggleInterruptEnabled()
+void Sensors::setDeltaY(float deltaY)
 {
-	this->interruptEnabled = !this->interruptEnabled;
+	this->deltaY = deltaY;
 }
 
+void Sensors::setCenter(bool center)
+{
 
+	this->center = center;
 
+}
+
+void Sensors::setIsFindTop(bool isFindTop)
+{
+	this->isFindTop = isFindTop;
+}
+
+void Sensors::setIdGroup(int idGroup)
+{
+	this->idGroup = idGroup;
+}

@@ -7,6 +7,9 @@
 #include <conio.h>
 #include <vcclr.h>
 
+#define minSizeEgg 0.037
+#define maxSizeEgg 0.047
+
 
 namespace FindEggApplication {
 
@@ -62,7 +65,7 @@ namespace FindEggApplication {
 		SerialPort^ mySerialPort;
 		HeightMap^ heightMap;
 		Thread^ myThread;
-		float eggSizeData = 0.037;
+		float eggSizeData = minSizeEgg;
 		float distanceToConv = 0.1;
 		int count = 10;
 		bool isRun;
@@ -155,6 +158,20 @@ namespace FindEggApplication {
 	private: System::Windows::Forms::Label^ labelRes;
 	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel9;
 	private: System::Windows::Forms::Label^ labelTest;
+	private: System::Windows::Forms::FlowLayoutPanel^ flowLayoutPanel10;
+	private: System::Windows::Forms::Panel^ panel13;
+	private: System::Windows::Forms::CheckBox^ checkBox1;
+	private: System::Windows::Forms::Panel^ panel15;
+	private: System::Windows::Forms::TextBox^ textBoxN;
+	private: System::Windows::Forms::Label^ label16;
+	private: System::Windows::Forms::Panel^ panel14;
+	private: System::Windows::Forms::TextBox^ textBoxDownPerc;
+
+	private: System::Windows::Forms::Label^ label15;
+private: System::Windows::Forms::Panel^ panel16;
+private: System::Windows::Forms::CheckBox^ checkBox2;
+private: System::Windows::Forms::Panel^ panel17;
+private: System::Windows::Forms::CheckBox^ checkBox3;
 
 
 
@@ -236,6 +253,15 @@ namespace FindEggApplication {
 			   this->panel12 = (gcnew System::Windows::Forms::Panel());
 			   this->textBoxPercLow = (gcnew System::Windows::Forms::TextBox());
 			   this->label14 = (gcnew System::Windows::Forms::Label());
+			   this->flowLayoutPanel10 = (gcnew System::Windows::Forms::FlowLayoutPanel());
+			   this->panel15 = (gcnew System::Windows::Forms::Panel());
+			   this->textBoxN = (gcnew System::Windows::Forms::TextBox());
+			   this->label16 = (gcnew System::Windows::Forms::Label());
+			   this->panel14 = (gcnew System::Windows::Forms::Panel());
+			   this->textBoxDownPerc = (gcnew System::Windows::Forms::TextBox());
+			   this->label15 = (gcnew System::Windows::Forms::Label());
+			   this->panel13 = (gcnew System::Windows::Forms::Panel());
+			   this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
 			   this->flowLayoutPanel8 = (gcnew System::Windows::Forms::FlowLayoutPanel());
 			   this->labelRes = (gcnew System::Windows::Forms::Label());
 			   this->flowLayoutPanel9 = (gcnew System::Windows::Forms::FlowLayoutPanel());
@@ -246,6 +272,10 @@ namespace FindEggApplication {
 			   this->button1 = (gcnew System::Windows::Forms::Button());
 			   this->buttonOpenFile = (gcnew System::Windows::Forms::Button());
 			   this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
+			   this->panel16 = (gcnew System::Windows::Forms::Panel());
+			   this->checkBox2 = (gcnew System::Windows::Forms::CheckBox());
+			   this->panel17 = (gcnew System::Windows::Forms::Panel());
+			   this->checkBox3 = (gcnew System::Windows::Forms::CheckBox());
 			   (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->splitContainer1))->BeginInit();
 			   this->splitContainer1->Panel1->SuspendLayout();
 			   this->splitContainer1->Panel2->SuspendLayout();
@@ -274,8 +304,14 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel7->SuspendLayout();
 			   this->panel11->SuspendLayout();
 			   this->panel12->SuspendLayout();
+			   this->flowLayoutPanel10->SuspendLayout();
+			   this->panel15->SuspendLayout();
+			   this->panel14->SuspendLayout();
+			   this->panel13->SuspendLayout();
 			   this->flowLayoutPanel8->SuspendLayout();
 			   this->flowLayoutPanel9->SuspendLayout();
+			   this->panel16->SuspendLayout();
+			   this->panel17->SuspendLayout();
 			   this->SuspendLayout();
 			   // 
 			   // splitContainer1
@@ -337,6 +373,7 @@ namespace FindEggApplication {
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel3);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel6);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel7);
+			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel10);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel8);
 			   this->flowLayoutPanel1->Controls->Add(this->flowLayoutPanel9);
 			   this->flowLayoutPanel1->FlowDirection = System::Windows::Forms::FlowDirection::TopDown;
@@ -740,10 +777,95 @@ namespace FindEggApplication {
 			   this->label14->TabIndex = 2;
 			   this->label14->Text = L"percLow";
 			   // 
+			   // flowLayoutPanel10
+			   // 
+			   this->flowLayoutPanel10->Controls->Add(this->panel15);
+			   this->flowLayoutPanel10->Controls->Add(this->panel14);
+			   this->flowLayoutPanel10->Controls->Add(this->panel13);
+			   this->flowLayoutPanel10->Controls->Add(this->panel16);
+			   this->flowLayoutPanel10->Controls->Add(this->panel17);
+			   this->flowLayoutPanel10->Location = System::Drawing::Point(3, 327);
+			   this->flowLayoutPanel10->Name = L"flowLayoutPanel10";
+			   this->flowLayoutPanel10->Size = System::Drawing::Size(245, 61);
+			   this->flowLayoutPanel10->TabIndex = 16;
+			   // 
+			   // panel15
+			   // 
+			   this->panel15->Controls->Add(this->textBoxN);
+			   this->panel15->Controls->Add(this->label16);
+			   this->panel15->Location = System::Drawing::Point(3, 3);
+			   this->panel15->Name = L"panel15";
+			   this->panel15->Size = System::Drawing::Size(115, 20);
+			   this->panel15->TabIndex = 9;
+			   // 
+			   // textBoxN
+			   // 
+			   this->textBoxN->Location = System::Drawing::Point(55, 0);
+			   this->textBoxN->Name = L"textBoxN";
+			   this->textBoxN->Size = System::Drawing::Size(57, 20);
+			   this->textBoxN->TabIndex = 3;
+			   this->textBoxN->TextChanged += gcnew System::EventHandler(this, &MyForm::textBoxN_TextChanged);
+			   // 
+			   // label16
+			   // 
+			   this->label16->AutoSize = true;
+			   this->label16->Location = System::Drawing::Point(3, 3);
+			   this->label16->Name = L"label16";
+			   this->label16->Size = System::Drawing::Size(15, 13);
+			   this->label16->TabIndex = 2;
+			   this->label16->Text = L"N";
+			   // 
+			   // panel14
+			   // 
+			   this->panel14->Controls->Add(this->textBoxDownPerc);
+			   this->panel14->Controls->Add(this->label15);
+			   this->panel14->Location = System::Drawing::Point(124, 3);
+			   this->panel14->Name = L"panel14";
+			   this->panel14->Size = System::Drawing::Size(115, 20);
+			   this->panel14->TabIndex = 9;
+			   // 
+			   // textBoxDownPerc
+			   // 
+			   this->textBoxDownPerc->Location = System::Drawing::Point(55, 0);
+			   this->textBoxDownPerc->Name = L"textBoxDownPerc";
+			   this->textBoxDownPerc->Size = System::Drawing::Size(57, 20);
+			   this->textBoxDownPerc->TabIndex = 3;
+			   this->textBoxDownPerc->TextChanged += gcnew System::EventHandler(this, &MyForm::textBoxDownPerc_TextChanged);
+			   // 
+			   // label15
+			   // 
+			   this->label15->AutoSize = true;
+			   this->label15->Location = System::Drawing::Point(3, 3);
+			   this->label15->Name = L"label15";
+			   this->label15->Size = System::Drawing::Size(55, 13);
+			   this->label15->TabIndex = 2;
+			   this->label15->Text = L"downPerc";
+			   // 
+			   // panel13
+			   // 
+			   this->panel13->Controls->Add(this->checkBox1);
+			   this->panel13->Location = System::Drawing::Point(3, 29);
+			   this->panel13->Name = L"panel13";
+			   this->panel13->Size = System::Drawing::Size(50, 24);
+			   this->panel13->TabIndex = 9;
+			   // 
+			   // checkBox1
+			   // 
+			   this->checkBox1->AutoSize = true;
+			   this->checkBox1->Checked = true;
+			   this->checkBox1->CheckState = System::Windows::Forms::CheckState::Checked;
+			   this->checkBox1->Location = System::Drawing::Point(3, 3);
+			   this->checkBox1->Name = L"checkBox1";
+			   this->checkBox1->Size = System::Drawing::Size(51, 17);
+			   this->checkBox1->TabIndex = 1;
+			   this->checkBox1->Text = L"noise";
+			   this->checkBox1->UseVisualStyleBackColor = true;
+			   this->checkBox1->CheckedChanged += gcnew System::EventHandler(this, &MyForm::checkBox1_CheckedChanged);
+			   // 
 			   // flowLayoutPanel8
 			   // 
 			   this->flowLayoutPanel8->Controls->Add(this->labelRes);
-			   this->flowLayoutPanel8->Location = System::Drawing::Point(3, 327);
+			   this->flowLayoutPanel8->Location = System::Drawing::Point(3, 394);
 			   this->flowLayoutPanel8->Name = L"flowLayoutPanel8";
 			   this->flowLayoutPanel8->Size = System::Drawing::Size(245, 61);
 			   this->flowLayoutPanel8->TabIndex = 15;
@@ -762,7 +884,7 @@ namespace FindEggApplication {
 			   // flowLayoutPanel9
 			   // 
 			   this->flowLayoutPanel9->Controls->Add(this->labelTest);
-			   this->flowLayoutPanel9->Location = System::Drawing::Point(3, 394);
+			   this->flowLayoutPanel9->Location = System::Drawing::Point(3, 461);
 			   this->flowLayoutPanel9->Name = L"flowLayoutPanel9";
 			   this->flowLayoutPanel9->Size = System::Drawing::Size(245, 61);
 			   this->flowLayoutPanel9->TabIndex = 16;
@@ -845,6 +967,46 @@ namespace FindEggApplication {
 			   this->backgroundWorker1->WorkerSupportsCancellation = true;
 			   this->backgroundWorker1->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &MyForm::backgroundWorker1_DoWork);
 			   // 
+			   // panel16
+			   // 
+			   this->panel16->Controls->Add(this->checkBox2);
+			   this->panel16->Location = System::Drawing::Point(59, 29);
+			   this->panel16->Name = L"panel16";
+			   this->panel16->Size = System::Drawing::Size(61, 24);
+			   this->panel16->TabIndex = 10;
+			   // 
+			   // checkBox2
+			   // 
+			   this->checkBox2->AutoSize = true;
+			   this->checkBox2->Checked = true;
+			   this->checkBox2->CheckState = System::Windows::Forms::CheckState::Checked;
+			   this->checkBox2->Location = System::Drawing::Point(3, 3);
+			   this->checkBox2->Name = L"checkBox2";
+			   this->checkBox2->Size = System::Drawing::Size(61, 17);
+			   this->checkBox2->TabIndex = 1;
+			   this->checkBox2->Text = L"mov av";
+			   this->checkBox2->UseVisualStyleBackColor = true;
+			   // 
+			   // panel17
+			   // 
+			   this->panel17->Controls->Add(this->checkBox3);
+			   this->panel17->Location = System::Drawing::Point(126, 29);
+			   this->panel17->Name = L"panel17";
+			   this->panel17->Size = System::Drawing::Size(61, 24);
+			   this->panel17->TabIndex = 11;
+			   // 
+			   // checkBox3
+			   // 
+			   this->checkBox3->AutoSize = true;
+			   this->checkBox3->Checked = true;
+			   this->checkBox3->CheckState = System::Windows::Forms::CheckState::Checked;
+			   this->checkBox3->Location = System::Drawing::Point(3, 3);
+			   this->checkBox3->Name = L"checkBox3";
+			   this->checkBox3->Size = System::Drawing::Size(46, 17);
+			   this->checkBox3->TabIndex = 1;
+			   this->checkBox3->Text = L"med";
+			   this->checkBox3->UseVisualStyleBackColor = true;
+			   // 
 			   // MyForm
 			   // 
 			   this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -897,10 +1059,21 @@ namespace FindEggApplication {
 			   this->panel11->PerformLayout();
 			   this->panel12->ResumeLayout(false);
 			   this->panel12->PerformLayout();
+			   this->flowLayoutPanel10->ResumeLayout(false);
+			   this->panel15->ResumeLayout(false);
+			   this->panel15->PerformLayout();
+			   this->panel14->ResumeLayout(false);
+			   this->panel14->PerformLayout();
+			   this->panel13->ResumeLayout(false);
+			   this->panel13->PerformLayout();
 			   this->flowLayoutPanel8->ResumeLayout(false);
 			   this->flowLayoutPanel8->PerformLayout();
 			   this->flowLayoutPanel9->ResumeLayout(false);
 			   this->flowLayoutPanel9->PerformLayout();
+			   this->panel16->ResumeLayout(false);
+			   this->panel16->PerformLayout();
+			   this->panel17->ResumeLayout(false);
+			   this->panel17->PerformLayout();
 			   this->ResumeLayout(false);
 
 		   }
@@ -909,7 +1082,7 @@ namespace FindEggApplication {
 
 		eggSize->Text = eggSizeData.ToString();
 
-		float valEnt = 92;
+		float valEnt = 50;
 		textBoxPercent->Text = valEnt.ToString();
 
 
@@ -924,6 +1097,10 @@ namespace FindEggApplication {
 
 		textBoxLower->Text = heightMap->loweringThreshold.ToString();
 
+		textBoxN->Text = heightMap->N.ToString();
+		textBoxDownPerc->Text = heightMap->downPerc.ToString();
+
+
 	}
 
 	private: System::Void flowLayoutPanel1_Paint(System::Object^ sender, System::Windows::Forms::PaintEventArgs^ e) {
@@ -935,7 +1112,9 @@ namespace FindEggApplication {
 
 	private: System::Void buttonOpenFile_Click(System::Object^ sender, System::EventArgs^ e) {
 
-		heightMap->readFile();
+		bool isChecked = checkBox1->Checked;
+
+		heightMap->readFile(isChecked);
 		textBoxCount->Text = heightMap->count.ToString();
 		textBoxIter->Text = heightMap->iteration.ToString();
 		textBoxCol->Text = heightMap->col.ToString();
@@ -1313,6 +1492,52 @@ namespace FindEggApplication {
 		{
 			// произошла ошибка преобразования
 		}
+	}
+	private: System::Void checkBox1_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+	}
+	private: System::Void textBoxN_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+		String^ inputText = textBoxN->Text;
+
+		int N;
+		bool result = Int32::TryParse(inputText, N);
+
+		if (result)
+		{
+			// Преобразование прошло успешно
+			// Далее можно использовать полученное число
+			// Например:
+
+
+			// Вывод результата на экран
+
+			heightMap->N = N;
+		}
+
+	}
+	private: System::Void textBoxDownPerc_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+
+
+
+		String^ inputText = textBoxDownPerc->Text;
+
+		int dp;
+		bool result = Int32::TryParse(inputText, dp);
+
+		if (result)
+		{
+			// Преобразование прошло успешно
+			// Далее можно использовать полученное число
+			// Например:
+
+
+			// Вывод результата на экран
+
+			heightMap->downPerc = dp;
+		}
+
+
+
 	}
 	};
 
