@@ -79,9 +79,11 @@ void HeightMap::readFile(bool noise)
 
 	random_device rd; // используется для инициализации генератора случайных чисел
 	mt19937 gen(rd()); // генератор случайных чисел
-	uniform_real_distribution<float> dis(-0.0000025f, 0.0000025f); // распределение
+	//uniform_real_distribution<float> dis(-0.0000025f, 0.0000025f); // распределение
 
-	//uniform_real_distribution<float> dis(-0.0025f, 0.0025f); // распределение
+	uniform_real_distribution<float> dis(-0.0025f, 0.0025f); // распределение
+
+	//uniform_real_distribution<float> dis(-0.003f, 0.003f); // распределение
 
 	// Генерация случайного числа
 	/*if (!Directory::Exists(LastFileDirectory))
@@ -537,10 +539,10 @@ cv::Mat HeightMap::drawOrig()
 
 
 
-			if (value > entryThreshold)
+			/*if (value > distanceToConv - 0.003)
 				value = 0;
-			else
-				value = (distanceToConv + 0.005 - value) * 20 * 255;
+			else*/
+			value = (distanceToConv + 0.005 - value) * 20 * 255;
 			//value = 255;
 
 			//if (value > 0.095f)
@@ -623,7 +625,7 @@ void HeightMap::updateSensors(int iter)
 
 		//-если слишким длинная, то принимаем решение о разделении(экстремумы)
 
-		if (endSensor - startSensor >= 3 * N && isCenterFind) {
+		if (endSensor - startSensor >= 50 * N && isCenterFind) {
 			//далее нужно разделить большую группу на несколько поменьше и установить у них центры
 			//отложено на потом
 
@@ -880,13 +882,14 @@ void HeightMap::updateSensors(int iter)
 		if (!isCenterFind && !nowSensor->isFindTop) {
 			//устанавливаем центр
 			//точка 1на
-			if (endSensor - startSensor == 1) {
-				nowSensor->setCenter(true);
+			//if (endSensor - startSensor == 1) {
+			//	nowSensor->setCenter(true);
 
-				//this->drawVector[i][iter] = -6;
-			}
-			//точек > 1
-			else {
+			//	//this->drawVector[i][iter] = -6;
+			//}
+			////точек > 1
+			//else 
+			{
 
 
 				////ВРЕМЕННО
@@ -943,7 +946,22 @@ void HeightMap::updateSensors(int iter)
 			float prevData = sensors[idCenter - 1]->value + sensors[idCenter]->value + sensors[idCenter + 1]->value;
 
 
-			float minVal = this->vector[startSensor - 1][iter] + this->vector[startSensor + 1][iter] + this->vector[startSensor][iter];
+
+			float nextMinVal = this->vector[startSensor + 1][iter];
+			float prevMinVal = this->vector[startSensor - 1][iter];
+			float nowMinVal = this->vector[startSensor][iter];
+
+
+
+			if (nextMinVal > entryThreshold) {
+				nextMinVal = entryThreshold;
+			}
+			if (prevMinVal > entryThreshold) {
+				prevMinVal = entryThreshold;
+			}
+
+
+			float minVal = nextMinVal + prevMinVal + nowMinVal;
 			int minIndex = startSensor;
 
 			for (int a = startSensor; a <= endSensor; a++) {
@@ -995,7 +1013,7 @@ void HeightMap::updateSensors(int iter)
 
 
 
-				if (minVal - prevData > (minVal / 100) * downPerc) {
+				if (minVal - prevData >= ((prevData) / 100) * downPerc) {
 					this->findCol++;
 
 					int a = idCenter;
@@ -1092,7 +1110,8 @@ void HeightMap::correctSensorGroup(int iter)
 				float deltaValueThree = sensors[indexSensorThree]->deltaY;
 				float deltaValueFour = sensors[indexSensorFour]->deltaY;
 
-				bool isAllSensorsValid = sensors[indexSensorOne]->idGroup != -1 &&
+				bool isAllSensorsValid =
+					sensors[indexSensorOne]->idGroup != -1 &&
 					sensors[indexSensorTwo]->idGroup != -1 &&
 					sensors[indexSensorThree]->idGroup != -1 &&
 					sensors[indexSensorFour]->idGroup != -1;
@@ -1125,14 +1144,133 @@ void HeightMap::correctSensorGroup(int iter)
 
 			int endSensor = i - 1;
 			//если перепадов больше чем групп, значит нужно делить и красим в желтый
-			if (findDrop > uniqueGroup - 1) {
-				for (int n = startSensor; n <= endSensor; n++) {
 
-					this->drawVector[n][iter] = -5;
+			//нужно принимать решение на основе состояния центров.
+			//если принято решение о разделении, то сохраняем состояние предывание техгрупп, где есть центры.
+			if (findDrop > uniqueGroup - 1) {
+				int idCenter = startSensor;
+				//перебор линии в поисках центра.
+				for (int n = startSensor; n < endSensor; n++) {
+
+					int indexSensorOne = n;
+					int indexSensorTwo = n + 1;
+					int indexSensorThree = n + 2;
+					int indexSensorFour = n + 3;
+
+					float deltaValueOne = sensors[indexSensorOne]->deltaY;
+					float deltaValueTwo = sensors[indexSensorTwo]->deltaY;
+					float deltaValueThree = sensors[indexSensorThree]->deltaY;
+					float deltaValueFour = sensors[indexSensorFour]->deltaY;
+
+
+
+					bool isFindDrop = deltaValueOne > 0 &&
+						deltaValueTwo > 0 &&
+						deltaValueThree < 0 &&
+						deltaValueFour < 0;
+
+
+
+					//если найден перепад
+					if (isFindDrop) {
+						//findDrop++;
+						this->drawVector[n][iter] = -5;
+						this->drawVector[n + 1][iter] = -2;
+						this->drawVector[n + 2][iter] = -2;
+						this->drawVector[n + 3][iter] = -5;
+
+						int startGrOne = startSensor;
+						int endGrOne = n + 1;
+
+						int startGrTwo = endGrOne + 1;
+						int endGrTwo = endSensor - 1;
+
+
+
+
+						//1 группу добавляем в новую
+						//также нужно принять решение о состоянии прерывания
+
+						this->idSensors++;
+						int goTop = 0;
+						int goBot = 0;
+						bool isCenterOneFind = false;
+						bool isCenterFindTopOne = false;
+
+						//если мы найдем центер, то берем его состояние
+						for (int m = startGrOne; m < endGrOne; m++) {
+							sensors[m]->idGroup = this->idSensors;
+							if (sensors[m]->center) {
+								isCenterOneFind = true;
+								isCenterFindTopOne = sensors[m]->isFindTop;
+							}
+							if (this->vector[m][iter] - this->vector[m][iter - 1] < 0 || this->vector[m][iter - 1]>entryThreshold) {
+								goTop++;
+							}
+							else {
+								goBot++;
+							}
+						}
+						for (int m = startGrOne; m < endGrOne; m++) {
+							if (isCenterOneFind) {
+								sensors[m]->isFindTop = isCenterFindTopOne;
+								continue;
+							}
+							if (goTop > goBot) {
+								sensors[m]->isFindTop = false;
+							}
+							else {
+								sensors[m]->isFindTop = true;
+							}
+						}
+
+						//2 группу оставляем
+
+						int goTopTwo = 0;
+						int goBotTwo = 0;
+						bool isCenterTwoFind = false;
+						bool isCenterFindTopTwo = false;
+
+						for (int m = startGrTwo; m < endGrTwo; m++) {
+							//sensors[m]->idGroup = this->idSensors;
+							float val = this->vector[m][iter];
+							float valTwo = this->vector[m][iter - 1];
+							if (sensors[m]->center) {
+								isCenterTwoFind = true;
+								isCenterFindTopTwo = sensors[m]->isFindTop;
+							}
+							if (this->vector[m][iter] - this->vector[m][iter - 1] < 0 || this->vector[m][iter - 1]>entryThreshold) {
+								goTopTwo++;
+							}
+							else {
+								goBotTwo++;
+							}
+						}
+						for (int m = startGrTwo; m < endGrTwo; m++) {
+							if (isCenterTwoFind) {
+								sensors[m]->isFindTop = isCenterFindTopTwo;
+								continue;
+							}
+							if (goTopTwo >= goBotTwo) {
+								sensors[m]->isFindTop = false;
+							}
+							else {
+								sensors[m]->isFindTop = true;
+							}
+						}
+
+						n += 3;
+					}
+					else {
+						this->drawVector[n][iter] = -5;
+
+					}
 
 
 				}
+
 			}
+
 
 
 			//если перепадов меньше чем групп, значит нужно объединять и красим в синий
@@ -1155,7 +1293,24 @@ void HeightMap::correctSensorGroup(int iter)
 
 
 					for (int n = startSensor; n <= endSensor; n++) {
+						if (this->vector[n][iter - 1] > entryThreshold
+							|| this->vector[n][iter - 2] > entryThreshold)
+							continue;
 
+						if ((this->vector[n][iter] - this->vector[n][iter - 1] < 0 &&
+							this->vector[n][iter - 1] - this->vector[n][iter - 2] < 0)
+							|| this->vector[n][iter - 1] > entryThreshold
+							|| this->vector[n][iter - 2] > entryThreshold) {
+
+							sensorsGoTop++;
+						}
+						if ((this->vector[n][iter] - this->vector[n][iter - 1] > 0 &&
+							this->vector[n][iter - 1] - this->vector[n][iter - 2] > 0)
+							|| this->vector[n][iter - 1] > entryThreshold
+							|| this->vector[n][iter - 2] > entryThreshold) {
+
+							sensorsGoBot++;
+						}
 
 						/*if ((this->vector[n][iter] - this->vector[n][iter - 1] < 0 &&
 							this->vector[n][iter - 1] - this->vector[n][iter - 2] < 0 &&
@@ -1183,7 +1338,7 @@ void HeightMap::correctSensorGroup(int iter)
 					}
 
 					//идет вверх isFindTop false
-					if (sensorsGoTop > sensorsGoBot) {
+					if (sensorsGoTop >= sensorsGoBot) {
 						this->drawVector[startSensor][iter] = -5;
 						this->drawVector[endSensor][iter] = -5;
 
@@ -1223,7 +1378,50 @@ void HeightMap::correctSensorGroup(int iter)
 
 			}
 
+			if (findDrop == 0 && uniqueGroup == 1) {
 
+				//смотрим линию
+				int sens = startSensor + 1;
+				int idGr = this->sensors[startSensor]->idGroup;
+				int colGoTop = 0;
+				int colGoBot = 0;
+
+				while (this->sensors[sens]->idGroup == idGr) {
+
+					if (this->vector[sens][iter - 1] > entryThreshold || this->vector[sens][iter - 2] > entryThreshold || this->vector[sens][iter - 2] > entryThreshold) {
+						sens++;
+						continue;
+					}
+
+					if (this->vector[sens][iter] - this->vector[sens][iter - 1] < 0 &&
+						this->vector[sens][iter - 1] - this->vector[sens][iter - 2] < 0 &&
+						this->vector[sens][iter - 2] - this->vector[sens][iter - 3] < 0) {
+						colGoTop++;
+					}
+					else
+					{
+						colGoBot++;
+					}
+
+					sens++;
+
+				}
+				if (this->sensors[startSensor]->isFindTop && colGoTop > colGoBot) {
+
+					for (int n = startSensor; n <= sens; n++) {
+						this->sensors[n]->isFindTop = false;
+					}
+
+
+
+				}
+
+
+
+
+
+
+			}
 
 
 		}
@@ -1387,13 +1585,17 @@ void HeightMap::checkSensor(int sensorId, int iter)
 		bool isAllSenrorGoTop = true;
 		int i = sensorId - 1;
 		int colGr = 0;
+
+
+
 		while (prevGroup == sensors[i]->idGroup) {
 
-			if (!(this->vector[i][iter] - this->vector[i][iter - 1] < 0 && this->vector[i][iter - 1] - this->vector[i][iter - 2] < 0) || this->vector[i][iter - 1] > entryThreshold || this->vector[i][iter - 2] > entryThreshold) {
+			if (!(this->vector[i][iter] - this->vector[i][iter - 1] < 0 &&
+				this->vector[i][iter - 1] - this->vector[i][iter - 2] < 0) || this->vector[i][iter - 1] > entryThreshold || this->vector[i][iter - 2] > entryThreshold) {
 				isAllSenrorGoTop = false;
 			}
 			colGr++;
-			i++;
+			i--;
 		}
 		int j = sensorId + 1;
 
@@ -1422,74 +1624,74 @@ void HeightMap::checkSensor(int sensorId, int iter)
 		//если они все вверх, то новая группа 
 
 
-
-
-
-
-
-
-		//int prevGroup = nowSensor->idGroup;
-		//bool isFindGroup = false;
-		//int findGroupId;
-		//int i = sensorId - 1;
-		//while (this->vector[i][iter] < entryThreshold) {
-
-		//	if (this->sensors[i]->isFindTop == false) {
-		//		isFindGroup = true;
-		//		findGroupId = this->sensors[i]->idGroup;
-		//	}
-		//	i--;
-		//}
-
-
-		//int j = sensorId + 1;
-		//while (this->vector[j][iter] < entryThreshold) {
-
-		//	if (this->sensors[j]->isFindTop == false) {
-		//		isFindGroup = true;
-		//		findGroupId = this->sensors[j]->idGroup;
-		//	}
-		//	j++;
-		//}
-
-		//if (isFindGroup) {
-		//	//копируем группу
-
-		//	nowSensor->startListhen(false, true, nowValue, nowValue - prevValue, findGroupId, false);
-
-		//}
-		//else {
-		//	//создаем группу
-		//	idSensors++;
-
-		//	nowSensor->startListhen(false, true, nowValue, nowValue - prevValue, idSensors, false);
-
-		//}
-
-
-
-		//проверка всех сенсеров в линиии и запоминием текущую группу
-
-		//если не нашел грушшу с не пройденым пиком, то создаем новую гуппу.
-
-		//если в линии нашлась еще группа, то присоединяем к ней
-
-
-
-
-		//nowSensor->resetSensor(this->entryThreshold);
-		//поиск сетнсоров рядом кроме прошлой группы
-
-
-
-
-
-
-
-
-
-
 	}
+
+
+
+
+
+
+	//int prevGroup = nowSensor->idGroup;
+	//bool isFindGroup = false;
+	//int findGroupId;
+	//int i = sensorId - 1;
+	//while (this->vector[i][iter] < entryThreshold) {
+
+	//	if (this->sensors[i]->isFindTop == false) {
+	//		isFindGroup = true;
+	//		findGroupId = this->sensors[i]->idGroup;
+	//	}
+	//	i--;
+	//}
+
+
+	//int j = sensorId + 1;
+	//while (this->vector[j][iter] < entryThreshold) {
+
+	//	if (this->sensors[j]->isFindTop == false) {
+	//		isFindGroup = true;
+	//		findGroupId = this->sensors[j]->idGroup;
+	//	}
+	//	j++;
+	//}
+
+	//if (isFindGroup) {
+	//	//копируем группу
+
+	//	nowSensor->startListhen(false, true, nowValue, nowValue - prevValue, findGroupId, false);
+
+	//}
+	//else {
+	//	//создаем группу
+	//	idSensors++;
+
+	//	nowSensor->startListhen(false, true, nowValue, nowValue - prevValue, idSensors, false);
+
+	//}
+
+
+
+	//проверка всех сенсеров в линиии и запоминием текущую группу
+
+	//если не нашел грушшу с не пройденым пиком, то создаем новую гуппу.
+
+	//если в линии нашлась еще группа, то присоединяем к ней
+
+
+
+
+	//nowSensor->resetSensor(this->entryThreshold);
+	//поиск сетнсоров рядом кроме прошлой группы
+
+
+
+
+
+
+
+
+
+
 }
 
 void HeightMap::findGroup(int sensorId, int iter)

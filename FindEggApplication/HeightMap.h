@@ -6,8 +6,8 @@ using namespace System::Collections::Generic;
 ref class HeightMap
 {
 public:
-	int count = 1, iteration, initIter, col, findCol = 0, idSensors = 0, N = 3, downPerc = 10;
-	float update, width, distanceToConv, noise, entryThreshold = 0.07595, loweringThreshold = 0.06855;
+	int count = 1, iteration, initIter, col, findCol = 0, idSensors = 0, N = 3, downPerc = 1;
+	float update, width, distanceToConv, noise, entryThreshold = 0.07225, loweringThreshold = 0.06855;
 	void setEntryThreshold(float val);
 	void setLoweringThreshold(float val);
 	List<List<float>^>^ vector;

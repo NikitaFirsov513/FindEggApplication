@@ -1082,7 +1082,7 @@ private: System::Windows::Forms::CheckBox^ checkBox3;
 
 		eggSize->Text = eggSizeData.ToString();
 
-		float valEnt = 50;
+		float valEnt = 75;
 		textBoxPercent->Text = valEnt.ToString();
 
 
